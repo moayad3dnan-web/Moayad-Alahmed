@@ -1,0 +1,2153 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>منيو المطعم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FBF3E6;
+    --surface:#F7EAD4;
+    --alt-bg:#F1DFBC;
+    --ink:#3B2A1E;
+    --ink-soft:#8A7259;
+    --line:#E3D2AE;
+    --accent-dark:#6E2A2A;
+    --gold:#C8962A;
+    --gold-tint:#F4E6C8;
+    --gold-strong:#9C7218;
+    --card1:#5A2626;
+    --card2:#2E1414;
+    --chef:#B9A4F0;
+    --new:#7DD3EA;
+    --sadu-a:#6E2A2A;
+    --sadu-b:#C8962A;
+    --sadu-c:#F1DFBC;
+  }
+  html.dark{
+    --bg:#181209;
+    --surface:#221A10;
+    --alt-bg:#1D160D;
+    --ink:#F2E9DA;
+    --ink-soft:#C2A98A;
+    --line:#3A2C1A;
+    --accent-dark:#8C3A3A;
+    --gold-tint:rgba(200,150,42,0.22);
+    --gold-strong:#E3B45C;
+    --sadu-a:#8C3A3A;
+    --sadu-b:#E3B45C;
+    --sadu-c:#221A10;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Cairo',sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+  body{ padding-bottom:90px; transition:background .2s, color .2s; }
+  ::placeholder{ color:var(--ink-soft); opacity:1; }
+
+  /* ---------- header ---------- */
+  .menu-header{ text-align:center; padding:34px 20px 16px; background:var(--bg); position:relative; }
+  .menu-header .eyebrow{ font-size:12px; letter-spacing:3px; color:var(--gold-strong); font-weight:700; margin-bottom:8px; }
+  .menu-header h1{ font-family:'Aref Ruqaa',serif; font-weight:700; font-size:clamp(30px,8vw,42px); color:var(--ink); }
+  .menu-header .sub{ margin-top:6px; font-size:13px; color:var(--ink-soft); font-weight:500; }
+  .table-badge{
+    display:inline-flex; align-items:center; gap:6px; margin-top:12px; padding:7px 16px; border-radius:20px;
+    background:var(--gold); color:#fff; font-weight:800; font-size:13px;
+  }
+  .ornament{ display:flex; align-items:center; justify-content:center; gap:10px; margin-top:16px; }
+  .ornament span{ height:1px; width:48px; background:var(--line); }
+  .ornament .dot{ width:6px; height:6px; border-radius:50%; background:var(--gold); flex:none; }
+
+  /* Sadu-inspired Bedouin geometric weaving pattern, used as a decorative divider */
+  .sadu-strip{
+    height:16px; width:100%;
+    background-image:
+      linear-gradient(135deg, var(--sadu-a) 25%, transparent 25.5%),
+      linear-gradient(225deg, var(--sadu-a) 25%, transparent 25.5%),
+      linear-gradient(45deg, var(--sadu-b) 25%, transparent 25.5%),
+      linear-gradient(315deg, var(--sadu-b) 25%, transparent 25.5%);
+    background-position: 8px 0, 8px 0, 0 0, 0 0;
+    background-size: 16px 16px;
+    background-repeat: repeat-x;
+    background-color: var(--sadu-c);
+  }
+
+  /* ---------- toolbar ---------- */
+  .toolbar{
+    position:sticky; top:0; z-index:6;
+    background:color-mix(in srgb, var(--bg) 94%, transparent);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+    padding-bottom:6px;
+  }
+  .toolbar-top-row{ display:flex; align-items:center; gap:10px; margin:12px 16px 10px; }
+  .settings-bubble{
+    flex:none; width:44px; height:44px; border-radius:50%;
+    border:1px solid var(--line); background:var(--bg); color:var(--ink);
+    font-size:18px; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.08);
+  }
+  .search-wrap{
+    flex:1; display:flex; align-items:center; gap:8px;
+    padding:10px 14px; background:var(--surface); border:1px solid var(--line); border-radius:30px;
+  }
+  .search-icon{ font-size:14px; color:var(--ink-soft); flex:none; }
+  .search-wrap input{ flex:1; border:none; background:transparent; outline:none; font-family:'Cairo',sans-serif; font-size:14px; color:var(--ink); }
+  .clear-btn{ border:none; background:transparent; font-size:14px; color:var(--ink-soft); cursor:pointer; display:none; flex:none; }
+
+  .filter-chips{ display:flex; gap:8px; padding:2px 16px 10px; overflow-x:auto; scrollbar-width:none; }
+  .filter-chips::-webkit-scrollbar{ display:none; }
+  .chip{
+    flex:none; display:flex; align-items:center; gap:5px; padding:7px 14px; border-radius:30px;
+    border:1px solid var(--line); background:var(--bg); color:var(--ink-soft);
+    font-family:'Cairo',sans-serif; font-weight:700; font-size:12.5px; white-space:nowrap; cursor:pointer;
+    transition:background .2s, color .2s, border-color .2s;
+  }
+  .chip.active{ background:linear-gradient(90deg,var(--gold),var(--gold-strong)); color:#fff; border-color:var(--gold-strong); }
+
+  .cat-nav{ display:flex; gap:10px; padding:4px 16px 8px; overflow-x:auto; scrollbar-width:none; }
+  .cat-nav::-webkit-scrollbar{ display:none; }
+  .cat-pill{
+    flex:none; padding:9px 18px; border-radius:30px;
+    border:1px solid var(--line); background:var(--bg); color:var(--ink-soft);
+    font-family:'Cairo',sans-serif; font-weight:600; font-size:13.5px; white-space:nowrap; cursor:pointer;
+    transition:background .2s, color .2s, border-color .2s;
+  }
+  .cat-pill.active{ background:var(--accent-dark); color:#fff; border-color:var(--accent-dark); }
+
+  .no-results{ text-align:center; color:var(--ink-soft); font-size:14px; padding:50px 24px; display:none; }
+
+  /* ---------- sections ---------- */
+  .cat-section{ padding:28px 18px 14px; background:var(--bg); }
+  .cat-section.alt-bg{ background:var(--alt-bg); }
+  .cat-section h2{ font-family:'Aref Ruqaa',serif; font-size:24px; color:var(--ink); margin-bottom:4px; display:flex; align-items:center; gap:10px; }
+  .cat-section h2::before{
+    content:''; display:inline-block; width:22px; height:14px; flex:none; border-radius:3px;
+    background-image:
+      linear-gradient(135deg, var(--sadu-a) 25%, transparent 25.5%),
+      linear-gradient(225deg, var(--sadu-a) 25%, transparent 25.5%),
+      linear-gradient(45deg, var(--sadu-b) 25%, transparent 25.5%),
+      linear-gradient(315deg, var(--sadu-b) 25%, transparent 25.5%);
+    background-position: 3.5px 0, 3.5px 0, 0 0, 0 0;
+    background-size: 7px 7px;
+    background-color: var(--sadu-c);
+  }
+  .cat-section .count-tag{ font-size:12px; color:var(--ink-soft); font-weight:500; margin-bottom:16px; display:block; }
+
+  /* ---------- dish card (always dark, white text) ---------- */
+  .dish-row{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:14px; margin-bottom:12px; border-radius:18px;
+    background:linear-gradient(150deg, var(--card1), var(--card2));
+    box-shadow:0 8px 18px rgba(0,0,0,0.18);
+    transition:box-shadow .25s;
+  }
+  .dish-row.flash{ box-shadow:0 0 0 2px var(--gold), 0 8px 22px rgba(200,150,42,0.4); }
+  .dish-left{ display:flex; align-items:center; gap:12px; flex:1; min-width:0; }
+  .dish-icon{
+    flex:none; width:78px; height:78px; border-radius:18px;
+    background:linear-gradient(135deg, rgba(200,150,42,0.28), rgba(255,255,255,0.05));
+    border:1px solid rgba(255,255,255,0.14);
+    display:flex; align-items:center; justify-content:center; font-size:28px;
+    position:relative; overflow:hidden;
+  }
+  .dish-icon img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .dish-icon .icon-fallback{
+    display:none; position:absolute; inset:0; align-items:center; justify-content:center; font-size:28px;
+  }
+  .dish-info{ flex:1; min-width:0; }
+  .dish-name{ font-weight:700; font-size:15.5px; color:#fff; display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
+  .dish-desc{ font-size:12.5px; color:rgba(255,255,255,0.74); margin-top:4px; line-height:1.55; }
+  .dish-meta{ display:flex; align-items:center; gap:10px; margin-top:6px; flex-wrap:wrap; }
+  .dish-rating, .dish-cal{ font-size:11.5px; font-weight:600; color:rgba(255,255,255,0.82); display:inline-flex; align-items:center; gap:3px; }
+  .dish-rating .rc{ color:rgba(255,255,255,0.55); font-weight:500; }
+  .dish-action{ display:flex; align-items:center; gap:12px; flex:none; }
+  .dish-price{ font-weight:700; font-size:14.5px; color:var(--gold); white-space:nowrap; }
+  .dish-price .curr{ font-size:11px; color:rgba(255,255,255,0.55); font-weight:500; }
+
+  .badge{
+    display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:700;
+    border-radius:20px; padding:2px 8px; border:1px solid var(--gold); color:var(--gold); background:rgba(255,255,255,0.08);
+  }
+  .badge.tag-chef{ border-color:var(--chef); color:var(--chef); }
+  .badge.tag-new{ border-color:var(--new); color:var(--new); }
+  .mini-tag{ font-size:13px; line-height:1; }
+
+  .add-btn{
+    width:34px; height:34px; border-radius:50%; border:none; background:var(--gold);
+    color:#fff; font-size:20px; font-weight:700; line-height:1; cursor:pointer;
+    box-shadow:0 4px 10px rgba(200,150,42,0.45); transition:transform .12s;
+  }
+  .add-btn:active{ transform:scale(0.88); }
+  .choose-btn{
+    height:34px; padding:0 16px; border-radius:20px; border:none; background:var(--gold);
+    color:#fff; font-weight:700; font-size:13px; cursor:pointer;
+    box-shadow:0 4px 10px rgba(200,150,42,0.45); font-family:'Cairo',sans-serif; transition:transform .12s;
+  }
+  .choose-btn:active{ transform:scale(0.94); }
+
+  /* ---------- floating buttons ---------- */
+  .cart-bubble{
+    position:fixed; bottom:18px; left:50%; transform:translateX(-50%) scale(0);
+    display:flex; align-items:center; gap:10px;
+    background:var(--accent-dark); color:#fff; padding:13px 22px; border-radius:40px;
+    box-shadow:0 10px 28px rgba(0,0,0,0.3); cursor:pointer; z-index:8;
+    transition:transform .25s cubic-bezier(.34,1.4,.64,1), background .2s;
+    font-weight:700; font-size:14px;
+  }
+  .cart-bubble.show{ transform:translateX(-50%) scale(1); }
+  .cart-bubble .gold-txt{ color:var(--gold); }
+
+  .bot-bubble{
+    position:fixed; bottom:18px; left:16px; width:54px; height:54px; border-radius:50%;
+    background:linear-gradient(145deg, var(--card1), var(--card2)); border:2px solid var(--gold);
+    display:flex; align-items:center; justify-content:center; font-size:24px; cursor:pointer; z-index:8;
+    box-shadow:0 10px 22px rgba(0,0,0,0.3);
+  }
+  .bot-bubble .ping{
+    position:absolute; top:-2px; left:-2px; width:14px; height:14px; border-radius:50%;
+    background:var(--gold); border:2px solid var(--bg); display:none;
+  }
+  .bot-bubble .ping.show{ display:block; }
+
+  /* ---------- shared overlay/sheet ---------- */
+  .sheet-overlay{ position:fixed; inset:0; background:rgba(10,9,6,0.55); z-index:20; opacity:0; pointer-events:none; transition:opacity .25s; }
+  .sheet-overlay.open{ opacity:1; pointer-events:auto; }
+  .sheet{
+    position:absolute; left:0; right:0; bottom:0;
+    background:var(--bg); border-radius:22px 22px 0 0; max-height:86vh; overflow-y:auto;
+    transform:translateY(100%); transition:transform .3s cubic-bezier(.32,.72,0,1);
+    padding:22px 20px 26px;
+  }
+  .sheet-overlay.open .sheet{ transform:translateY(0); }
+  .sheet-handle{ width:38px; height:4px; border-radius:4px; background:var(--line); margin:0 auto 16px; }
+  .sheet-title{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .sheet-title h3{ font-family:'Aref Ruqaa',serif; font-size:22px; color:var(--ink); }
+  .close-x{
+    width:30px; height:30px; border-radius:50%; border:1px solid var(--line);
+    background:var(--bg); font-size:15px; cursor:pointer; color:var(--ink-soft); flex:none;
+  }
+  .empty-cart{ text-align:center; color:var(--ink-soft); font-size:14px; padding:30px 0; }
+  .cart-item{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 0; border-bottom:1px solid var(--line); }
+  .cart-item .ci-info{ flex:1; min-width:0; }
+  .cart-item .ci-name{ font-weight:700; font-size:14.5px; color:var(--ink); }
+  .cart-item .ci-unit{ font-size:11.5px; color:var(--ink-soft); margin-top:2px; line-height:1.5; }
+  .qty-ctrl{ display:flex; align-items:center; gap:8px; flex:none; }
+  .qty-ctrl button{
+    width:26px; height:26px; border-radius:50%; border:1px solid var(--line);
+    background:var(--surface); font-size:15px; font-weight:700; color:var(--ink); cursor:pointer;
+  }
+  .qty-ctrl button[disabled]{ opacity:0.35; cursor:not-allowed; }
+  .qty-ctrl .qty-num{ min-width:18px; text-align:center; font-weight:700; font-size:14px; color:var(--ink); }
+  .ci-linetotal{ font-weight:700; font-size:14px; min-width:62px; text-align:left; flex:none; color:var(--ink); }
+
+  .notes-block{ margin-top:18px; }
+  .notes-block label{ font-size:13px; font-weight:700; color:var(--ink); display:block; margin-bottom:8px; }
+  .notes-block textarea{
+    width:100%; min-height:74px; border-radius:14px; border:1px solid var(--line);
+    background:var(--surface); padding:12px 14px; font-family:'Cairo',sans-serif;
+    font-size:13.5px; color:var(--ink); resize:vertical;
+  }
+  .notes-block textarea:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+
+  .discount-block{ margin-top:16px; }
+  .discount-block label{ font-size:13px; font-weight:700; color:var(--ink); display:block; margin-bottom:8px; }
+  .discount-row{ display:flex; gap:8px; }
+  .discount-row input{
+    flex:1; border:1px solid var(--line); border-radius:14px; background:var(--surface);
+    padding:11px 14px; font-family:'Cairo',sans-serif; font-size:13.5px; color:var(--ink); outline:none;
+  }
+  .discount-row input:focus{ border-color:var(--gold); }
+  .discount-row button{
+    flex:none; padding:0 18px; border-radius:14px; border:none; background:var(--accent-dark); color:#fff;
+    font-family:'Cairo',sans-serif; font-weight:700; font-size:13px; cursor:pointer;
+  }
+  .discount-msg{ font-size:12px; font-weight:600; margin-top:6px; min-height:14px; }
+  .discount-msg.ok{ color:#3c8f4a; }
+  .discount-msg.bad{ color:#b33a3a; }
+  .discount-summary{ display:none; }
+  .total-row.sub{ margin-top:14px; padding-top:0; border-top:none; }
+  .total-row.sub .val.small{ font-size:14px; font-weight:700; }
+  .discount-line .lbl, .discount-line .val{ color:#3c8f4a; }
+
+  .total-row{ display:flex; justify-content:space-between; align-items:baseline; margin-top:18px; padding-top:14px; border-top:1px solid var(--line); }
+  .total-row .lbl{ font-size:13px; color:var(--ink-soft); font-weight:600; }
+  .total-row .val{ font-size:22px; font-weight:800; color:var(--ink); }
+  .total-row .val .curr{ font-size:13px; color:var(--ink-soft); }
+
+  .sheet-actions{ display:flex; gap:10px; margin-top:18px; }
+  .sheet-actions button{ flex:1; padding:13px; border-radius:30px; border:none; font-family:'Cairo',sans-serif; font-weight:700; font-size:14px; cursor:pointer; }
+  .sheet-actions-secondary{ display:flex; gap:10px; margin-top:10px; }
+  .sheet-actions-secondary button{ flex:1; padding:10px; border-radius:30px; border:none; font-family:'Cairo',sans-serif; font-weight:600; font-size:12.5px; cursor:pointer; }
+  .btn-primary{ background:var(--gold); color:#fff; }
+  .btn-primary[disabled]{ opacity:0.4; cursor:not-allowed; }
+  .btn-secondary{ background:var(--surface); color:var(--ink); border:1px solid var(--line); }
+  .btn-ghost{ background:transparent; color:var(--ink-soft); border:1px solid var(--line); }
+
+  /* ---------- config modal ---------- */
+  .config-block{ margin-bottom:18px; }
+  .block-label{ font-size:13px; font-weight:700; color:var(--ink); display:block; margin-bottom:10px; }
+  .size-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .size-opt{ border:1px solid var(--line); border-radius:14px; padding:10px 12px; text-align:center; cursor:pointer; background:var(--surface); color:var(--ink); }
+  .size-opt.active{ border-color:var(--gold); background:var(--gold-tint); }
+  .size-opt .sz-label{ font-weight:700; font-size:14px; }
+  .size-opt .sz-meta{ font-size:11.5px; color:var(--ink-soft); margin-top:3px; }
+  .size-opt .sz-price{ font-size:12.5px; font-weight:700; color:var(--gold-strong); margin-top:4px; }
+
+  .skewer-row{ display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); }
+  .skewer-row:last-child{ border-bottom:none; }
+  .skewer-row .sk-name{ font-size:13.5px; font-weight:600; color:var(--ink); }
+  .dist-status{ margin-top:10px; font-size:12.5px; font-weight:700; text-align:center; padding:8px; border-radius:10px; background:var(--surface); color:var(--ink-soft); }
+  .dist-status.ok{ color:#3c8f4a; background:#eaf6ec; }
+  .dist-status.bad{ color:#b33a3a; background:#fbeaea; }
+
+  /* ---------- chatbot sheet ---------- */
+  #botOverlay .sheet{ display:flex; flex-direction:column; height:72vh; max-height:80vh; }
+  .chat-log{ flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding:4px 2px 14px; }
+  .msg{ max-width:80%; padding:10px 14px; border-radius:16px; font-size:13.5px; line-height:1.65; }
+  .msg.bot{ align-self:flex-start; background:var(--surface); border:1px solid var(--line); color:var(--ink); border-bottom-right-radius:4px; }
+  .msg.user{ align-self:flex-end; background:var(--gold); color:#fff; border-bottom-left-radius:4px; }
+  .quick-chips{ display:flex; gap:8px; overflow-x:auto; padding:4px 0 10px; scrollbar-width:none; }
+  .quick-chips::-webkit-scrollbar{ display:none; }
+  .quick-chip{ flex:none; padding:7px 13px; border-radius:20px; background:var(--surface); border:1px solid var(--line); font-size:12px; font-weight:600; color:var(--ink); cursor:pointer; }
+  .chat-input-row{ display:flex; gap:8px; padding-top:8px; border-top:1px solid var(--line); }
+  .chat-input-row input{ flex:1; border:1px solid var(--line); border-radius:24px; padding:11px 16px; font-family:'Cairo',sans-serif; font-size:13.5px; outline:none; color:var(--ink); background:var(--surface); }
+  .chat-input-row input:focus{ border-color:var(--gold); }
+  .chat-send{ width:44px; height:44px; border-radius:50%; border:none; background:var(--gold); color:#fff; font-size:17px; cursor:pointer; flex:none; }
+
+  /* ---------- order tracking sheet ---------- */
+  .order-num{ text-align:center; font-size:13px; color:var(--ink-soft); font-weight:600; margin-bottom:18px; }
+  .order-num b{ color:var(--ink); font-size:15px; }
+  .track-steps{ display:flex; flex-direction:column; margin-top:6px; }
+  .track-step{ display:flex; align-items:stretch; gap:14px; }
+  .track-step .rail{ display:flex; flex-direction:column; align-items:center; flex:none; }
+  .track-step .dot{
+    width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:16px; background:var(--line); color:var(--ink-soft); flex:none;
+    transition:background .3s, color .3s, box-shadow .3s;
+  }
+  .track-step.done .dot{ background:var(--gold); color:#fff; }
+  .track-step.active .dot{ background:var(--accent-dark); color:var(--gold); box-shadow:0 0 0 5px var(--gold-tint); }
+  .track-step .line{ width:2px; flex:1; background:var(--line); margin-top:4px; min-height:30px; }
+  .track-step.done .line{ background:var(--gold); }
+  .track-step:last-child .line{ display:none; }
+  .track-step .step-text{ padding:2px 0 26px; }
+  .step-title{ font-weight:700; font-size:14.5px; color:var(--ink); }
+  .track-step:not(.active):not(.done) .step-title{ color:var(--ink-soft); }
+  .step-sub{ font-size:12px; color:var(--ink-soft); margin-top:3px; }
+  .track-note{ margin-top:10px; font-size:12px; color:var(--ink-soft); text-align:center; background:var(--surface); border-radius:12px; padding:10px; }
+
+  /* ---------- settings sheet ---------- */
+  .settings-block{ margin-bottom:20px; }
+  .settings-row-label{ font-size:13px; font-weight:700; color:var(--ink); margin-bottom:10px; display:block; }
+  .zoom-control{ display:flex; align-items:center; justify-content:center; gap:16px; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:12px; }
+  .zoom-btn{ width:38px; height:38px; border-radius:50%; border:1px solid var(--line); background:var(--bg); color:var(--ink); font-size:16px; font-weight:700; cursor:pointer; }
+  .zoom-btn[disabled]{ opacity:0.35; cursor:not-allowed; }
+  .zoom-value{ min-width:50px; text-align:center; font-weight:700; font-size:14px; color:var(--ink); }
+  .theme-toggle{ display:flex; gap:10px; }
+  .lang-toggle{ display:flex; flex-wrap:wrap; gap:8px; }
+  .lang-toggle .option-pill{ flex:1 1 30%; min-width:88px; }
+  .option-pill{
+    flex:1; padding:11px; border-radius:14px; border:1px solid var(--line); background:var(--surface);
+    color:var(--ink); font-family:'Cairo',sans-serif; font-weight:700; font-size:13.5px; cursor:pointer; text-align:center;
+  }
+  .option-pill.active{ background:var(--accent-dark); color:#fff; border-color:var(--accent-dark); }
+
+  .toast{
+    position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--accent-dark); color:#fff; padding:10px 18px; border-radius:30px;
+    font-size:13px; font-weight:600; opacity:0; transition:opacity .25s, transform .25s; z-index:30;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  button:focus-visible, .cat-pill:focus-visible, .chip:focus-visible, .add-btn:focus-visible,
+  .choose-btn:focus-visible, .size-opt:focus-visible, .quick-chip:focus-visible, .option-pill:focus-visible{
+    outline:2px solid var(--gold-strong); outline-offset:2px;
+  }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+
+  /* ---------- print / PDF export ---------- */
+  @media print{
+    .toolbar, .cart-bubble, .bot-bubble, .sheet-overlay, .sadu-strip, .toast{ display:none !important; }
+    body{ padding-bottom:0; background:#fff; }
+    .menu-header{ padding:10px 0 8px; }
+    .cat-section{ padding:14px 0; break-inside:avoid; }
+    .cat-section.alt-bg{ background:#fff; }
+    .dish-row{
+      background:#fff !important; color:#000 !important; box-shadow:none;
+      border:1px solid #ddd; break-inside:avoid; margin-bottom:8px;
+    }
+    .dish-name, .dish-desc, .dish-price, .dish-price .curr, .dish-rating, .dish-cal{ color:#000 !important; }
+    .dish-price{ color:#6E2A2A !important; }
+    .dish-icon{ display:none; }
+    .choose-btn, .add-btn{ display:none; }
+    .badge{ border-color:#6E2A2A; color:#6E2A2A; background:none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="zoomWrap">
+  <header class="menu-header">
+    <div class="eyebrow" id="eyebrowText">قائمة الطعام</div>
+    <h1 id="titleText">اسم المطعم</h1>
+    <div class="sub" id="subText">جودة تُذاق، وتجربة تُذكر</div>
+    <div class="table-badge" id="tableBadge" style="display:none;"></div>
+    <div class="ornament"><span></span><div class="dot"></div><span></span></div>
+  </header>
+  <div class="sadu-strip"></div>
+
+  <div class="toolbar">
+    <div class="toolbar-top-row">
+      <button class="settings-bubble" id="settingsBtn">⚙️</button>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input id="searchInput" type="text" placeholder="بحث عن طبق...">
+        <button class="clear-btn" id="clearSearch">✕</button>
+      </div>
+    </div>
+    <div class="filter-chips" id="filterChips"></div>
+    <nav class="cat-nav" id="catNav"></nav>
+  </div>
+
+  <div class="no-results" id="noResults">لا توجد أطباق مطابقة</div>
+  <main id="menuSections"></main>
+</div>
+
+<div class="cart-bubble" id="cartBubble">
+  <span>🧾</span>
+  <span id="bubbleCount">0 أطباق</span>
+  <span class="gold-txt" id="bubbleTotal">· 0 ر.س</span>
+</div>
+
+<div class="bot-bubble" id="botBubble">
+  🤖
+  <span class="ping" id="botPing"></span>
+</div>
+
+<!-- cart sheet -->
+<div class="sheet-overlay" id="cartOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">
+      <h3 id="cartTitleText">طلبك</h3>
+      <button class="close-x" id="closeX">✕</button>
+    </div>
+
+    <div id="emptyCart" class="empty-cart">لم تختر أي طبق بعد، تصفّح القائمة واضغط (+) لإضافة طبق.</div>
+    <div id="cartItemsWrap"></div>
+
+    <div class="notes-block">
+      <label id="notesLabelText">ملاحظات على الطلب</label>
+      <textarea id="notesInput" placeholder="مثال: بدون بصل، إضافة صلصة حارة..."></textarea>
+    </div>
+
+    <div class="discount-block">
+      <label id="discountLabelText">كود الخصم</label>
+      <div class="discount-row">
+        <input id="discountInput" type="text" placeholder="أدخل كود الخصم">
+        <button id="applyDiscountBtn">تطبيق</button>
+      </div>
+      <div class="discount-msg" id="discountMsg"></div>
+    </div>
+
+    <div class="discount-summary" id="discountSummary">
+      <div class="total-row sub">
+        <span class="lbl" id="subtotalLabelText">المجموع الفرعي</span>
+        <span class="val small"><span id="subtotalPrice">0</span> <span class="curr" id="subtotalCurrText">ر.س</span></span>
+      </div>
+      <div class="total-row sub discount-line">
+        <span class="lbl" id="discountLineLabelText">الخصم</span>
+        <span class="val small">-<span id="discountAmount">0</span> <span class="curr" id="discountAmountCurrText">ر.س</span></span>
+      </div>
+    </div>
+
+    <div class="total-row">
+      <span class="lbl" id="totalLabelText">الإجمالي</span>
+      <span class="val"><span id="totalPrice">0</span> <span class="curr" id="totalCurrText">ر.س</span></span>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn-primary" id="confirmOrderBtn">تأكيد الطلب</button>
+    </div>
+    <div class="sheet-actions-secondary">
+      <button class="btn-ghost" id="copyOrderBtn">نسخ الطلب فقط</button>
+      <button class="btn-secondary" id="closeCartBtn">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- mixed grill config sheet -->
+<div class="sheet-overlay" id="configOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">
+      <h3 id="configTitle">صحن مشكل مشاوي</h3>
+      <button class="close-x" id="configCloseX">✕</button>
+    </div>
+
+    <div class="config-block">
+      <label class="block-label" id="configSizeLabelText">اختر الحجم</label>
+      <div class="size-grid" id="sizeGrid"></div>
+    </div>
+
+    <div class="config-block">
+      <label class="block-label" id="configSkewerLabelText">عدّل توزيع الأسياخ</label>
+      <div id="skewerList"></div>
+      <div class="dist-status" id="distStatus">الموزّع: 0 / 0</div>
+    </div>
+
+    <div class="total-row">
+      <span class="lbl" id="configPriceLabelText">السعر</span>
+      <span class="val"><span id="configPrice">0</span> <span class="curr" id="configCurrText">ر.س</span></span>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn-primary" id="confirmConfigBtn">إضافة للسلة</button>
+    </div>
+    <div class="sheet-actions-secondary">
+      <button class="btn-secondary" id="cancelConfigBtn" style="flex:none; width:100%;">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- soft drink config sheet -->
+<div class="sheet-overlay" id="drinkOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">
+      <h3 id="drinkTitle">مشروبات غازية</h3>
+      <button class="close-x" id="drinkCloseX">✕</button>
+    </div>
+
+    <div class="config-block">
+      <label class="block-label" id="drinkFlavorLabelText">اختر النكهة</label>
+      <div class="size-grid" id="flavorGrid"></div>
+    </div>
+
+    <div class="config-block">
+      <label class="block-label" id="drinkVariantLabelText">اختر النوع</label>
+      <div class="theme-toggle" id="variantToggle"></div>
+    </div>
+
+    <div class="dist-status" id="drinkSizeNote">الحجم متوفر بحجم وسط فقط</div>
+
+    <div class="total-row">
+      <span class="lbl" id="drinkPriceLabelText">السعر</span>
+      <span class="val"><span id="drinkPrice">0</span> <span class="curr" id="drinkCurrText">ر.س</span></span>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn-primary" id="confirmDrinkBtn">إضافة للسلة</button>
+    </div>
+    <div class="sheet-actions-secondary">
+      <button class="btn-secondary" id="cancelDrinkBtn" style="flex:none; width:100%;">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- chatbot sheet -->
+<div class="sheet-overlay" id="botOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">
+      <h3 id="botTitleText">🤖 المساعد الذكي</h3>
+      <button class="close-x" id="botCloseX">✕</button>
+    </div>
+    <div class="chat-log" id="chatLog"></div>
+    <div class="quick-chips" id="quickChips"></div>
+    <div class="chat-input-row">
+      <input id="chatInput" type="text" placeholder="اكتب سؤالك هنا...">
+      <button class="chat-send" id="chatSend">↑</button>
+    </div>
+  </div>
+</div>
+
+<!-- order tracking sheet -->
+<div class="sheet-overlay" id="trackOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">
+      <h3 id="trackTitleText">حالة طلبك</h3>
+      <button class="close-x" id="trackCloseX">✕</button>
+    </div>
+    <div class="order-num"><span id="orderNumLabelText">رقم الطلب:</span> <b id="orderNum">#0000</b></div>
+    <div class="track-steps" id="trackSteps"></div>
+    <div class="track-note" id="trackNoteText">هذا تتبّع توضيحي يتحرك تلقائياً لعرض الفكرة.</div>
+    <div class="sheet-actions">
+      <button class="btn-primary" id="trackDoneBtn">متابعة التصفح</button>
+    </div>
+  </div>
+</div>
+
+<!-- settings sheet -->
+<div class="sheet-overlay" id="settingsOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">
+      <h3 id="settingsTitleText">⚙️ الإعدادات</h3>
+      <button class="close-x" id="settingsCloseX">✕</button>
+    </div>
+
+    <div class="settings-block">
+      <label class="settings-row-label" id="fontSizeLabelText">حجم الخط</label>
+      <div class="zoom-control">
+        <button class="zoom-btn" id="zoomOutBtn">A−</button>
+        <span class="zoom-value" id="zoomValue">100%</span>
+        <button class="zoom-btn" id="zoomInBtn">A+</button>
+      </div>
+    </div>
+
+    <div class="settings-block">
+      <label class="settings-row-label" id="themeLabelText">المظهر</label>
+      <div class="theme-toggle">
+        <button class="option-pill" id="lightBtn">☀️ فاتح</button>
+        <button class="option-pill" id="darkBtn">🌙 داكن</button>
+      </div>
+    </div>
+
+    <div class="settings-block">
+      <label class="settings-row-label" id="languageLabelText">اللغة</label>
+      <div class="lang-toggle" id="langToggleWrap"></div>
+    </div>
+
+    <div class="settings-block">
+      <label class="settings-row-label" id="pdfLabelText">القائمة كملف PDF</label>
+      <button class="option-pill" id="downloadPdfBtn" style="width:100%;">🖨️ تحميل / طباعة القائمة PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  // ===================================================================
+  // عدّل الأطباق والأسعار والترجمات من هنا (الأسعار افتراضية بالريال السعودي)
+  // tags المتاحة: bestseller, vegetarian, spicy, chef, new
+  // ===================================================================
+  const CATEGORIES = [
+    {key:'main',       icon:'🍛'},
+    {key:'bundles',     icon:'👨‍👩‍👧‍👦'},
+    {key:'hotApp',      icon:'🔥'},
+    {key:'coldApp',     icon:'🥗'},
+    {key:'salads',      icon:'🥬'},
+    {key:'coldDrinks',  icon:'🧊'},
+    {key:'hotDrinks',   icon:'☕'},
+    {key:'dessert',     icon:'🍰'},
+  ];
+
+  const DISHES = {
+    main: [
+      {
+        id:'mix1', type:'configurable', icon:'🍢', tags:['bestseller'],
+        name:'صحن مشكل مشاوي',
+        desc:'تشكيلة أسياخ مشوية على الفحم، اختر الحجم وعدّل نوع كل سيخ كما تحب',
+        keywords:'مشاوي اسياخ مشكل كباب شيش طاووق كفتة ريش mixed grill skewer platter',
+        i18n:{en:{name:'Mixed Grill Platter', desc:'A charcoal-grilled skewer selection — choose your size and customize each skewer type.'},
+              zh:{name:'烤肉拼盘'}, es:{name:'Parrillada mixta'}, nl:{name:'Gemengde grillschotel'}, fr:{name:'Assortiment de grillades'}},
+        sizes:[
+          {key:'large',  label:'كبير', skewers:32, price:240, i18n:{en:{label:'Large'}, zh:{label:'大份'}, es:{label:'Grande'}, nl:{label:'Groot'}, fr:{label:'Grand'}}},
+          {key:'medium', label:'وسط',  skewers:16, price:130, i18n:{en:{label:'Medium'}, zh:{label:'中份'}, es:{label:'Mediano'}, nl:{label:'Middel'}, fr:{label:'Moyen'}}},
+          {key:'small',  label:'صغير', skewers:8,  price:70,  i18n:{en:{label:'Small'}, zh:{label:'小份'}, es:{label:'Pequeño'}, nl:{label:'Klein'}, fr:{label:'Petit'}}},
+          {key:'mini',   label:'مني',  skewers:4,  price:40,  i18n:{en:{label:'Mini'}, zh:{label:'迷你'}, es:{label:'Mini'}, nl:{label:'Mini'}, fr:{label:'Mini'}}},
+        ],
+        skewerTypes:[
+          {key:'lamb',    label:'كباب لحم',          i18n:{en:{label:'Lamb Kabab'}, zh:{label:'羊肉串'}, es:{label:'Kebab de cordero'}, nl:{label:'Lamsspies'}, fr:{label:'Brochette d\u2019agneau'}}},
+          {key:'chicken', label:'شيش طاووق دجاج',    i18n:{en:{label:'Chicken Shish Tawook'}, zh:{label:'鸡肉串'}, es:{label:'Shish Tawook de pollo'}, nl:{label:'Kip shish tawook'}, fr:{label:'Chich taouk poulet'}}},
+          {key:'kofta',   label:'كفتة',               i18n:{en:{label:'Kofta'}, zh:{label:'烤肉丸'}, es:{label:'Kofta'}, nl:{label:'Kofta'}, fr:{label:'Kefta'}}},
+          {key:'ribs',    label:'ريش لحم',            i18n:{en:{label:'Lamb Ribs'}, zh:{label:'羊排'}, es:{label:'Costillas de cordero'}, nl:{label:'Lamsribbetjes'}, fr:{label:'Côtes d\u2019agneau'}}},
+        ],
+      },
+      {id:'m1',  name:'كبسة دجاج', desc:'أرز بسمتي مع دجاج متبل وبهارات الكبسة', price:42, icon:'🍗', tags:['bestseller'],
+        i18n:{en:{name:'Chicken Kabsa', desc:'Basmati rice with marinated chicken and traditional kabsa spices'},
+              zh:{name:'鸡肉卡布萨饭'}, es:{name:'Kabsa de pollo'}, nl:{name:'Kip kabsa'}, fr:{name:'Kabsa au poulet'}}},
+      {id:'m6',  name:'كبسة لحم', desc:'أرز بسمتي مع لحم غنم وبهارات الكبسة', price:48, icon:'🍖', tags:[],
+        i18n:{en:{name:'Lamb Kabsa', desc:'Basmati rice with tender lamb and kabsa spices'},
+              zh:{name:'羊肉卡布萨饭'}, es:{name:'Kabsa de cordero'}, nl:{name:'Lams kabsa'}, fr:{name:'Kabsa à l\u2019agneau'}}},
+      {id:'m2',  name:'مندي لحم', desc:'لحم مطبوخ في حفرة تقليدية مع أرز مفلفل ودقوس', price:58, icon:'🥘', tags:['bestseller'],
+        i18n:{en:{name:'Lamb Mandi', desc:'Slow-cooked pit-style lamb served with fluffy rice and daqous sauce'},
+              zh:{name:'羊肉曼迪饭'}, es:{name:'Mandi de cordero'}, nl:{name:'Lams mandi'}, fr:{name:'Mandi à l\u2019agneau'}}},
+      {id:'m7',  name:'مندي دجاج', desc:'دجاج مطبوخ على الطريقة اليمنية الخليجية مع أرز مفلفل', price:46, icon:'🍛', tags:[],
+        i18n:{en:{name:'Chicken Mandi', desc:'Gulf-Yemeni style slow-cooked chicken served with fluffy rice'},
+              zh:{name:'鸡肉曼迪饭'}, es:{name:'Mandi de pollo'}, nl:{name:'Kip mandi'}, fr:{name:'Mandi au poulet'}}},
+      {id:'m3',  name:'زبيدي مشوي', desc:'سمك زبيدي طازج مشوي على الفحم مع صلصة الدقوس والليمون', price:52, icon:'🐟', tags:[],
+        i18n:{en:{name:'Grilled Pomfret', desc:'Fresh charcoal-grilled pomfret with daqous and lemon sauce'},
+              zh:{name:'炭烤鲳鱼'}, es:{name:'Pámpano a la parrilla'}, nl:{name:'Gegrilde vleet'}, fr:{name:'Pomfret grillé'}}},
+      {id:'m8',  name:'روبيان مشوي بالثومية', desc:null, price:65, icon:'🍤', tags:['spicy'],
+        i18n:{en:{name:'Garlic Grilled Shrimp', desc:null},
+              zh:{name:'蒜香烤虾'}, es:{name:'Camarones a la parrilla con ajo'}, nl:{name:'Gegrilde garnalen met knoflook'}, fr:{name:'Crevettes grillées à l\u2019ail'}}},
+      {id:'m5',  name:'برياني لحم خليجي', desc:'أرز برياني بالبهارات على الطريقة الخليجية', price:46, icon:'🍚', tags:['spicy'],
+        i18n:{en:{name:'Gulf-Style Lamb Biryani', desc:'Gulf-spiced biryani rice with tender lamb'},
+              zh:{name:'海湾风味羊肉印度香饭'}, es:{name:'Biryani de cordero estilo del Golfo'}, nl:{name:'Golf-stijl lams biryani'}, fr:{name:'Biryani à l\u2019agneau façon Golfe'}}},
+      {id:'m9',  name:'قوزي لحم', desc:'لحم غنم كامل مطبوخ ببطء فوق أرز محمّر باللوز والمكسرات', price:72, icon:'🍖', tags:['chef'],
+        i18n:{en:{name:'Lamb Ouzi', desc:'Slow-cooked whole lamb served over spiced rice with almonds and nuts'},
+              zh:{name:'羊肉乌兹饭'}, es:{name:'Ouzi de cordero'}, nl:{name:'Lams ouzi'}, fr:{name:'Ouzi à l\u2019agneau'}}},
+      {id:'m10', name:'هريس دجاج', desc:'قمح مطبوخ ببطء مع دجاج ويُقدّم مع سمن ودبس التمر', price:38, icon:'🍲', tags:['new'],
+        i18n:{en:{name:'Chicken Harees', desc:'Slow-cooked wheat with chicken, served with ghee and date syrup'},
+              zh:{name:'鸡肉哈里斯麦粥'}, es:{name:'Harees de pollo'}, nl:{name:'Kip harees'}, fr:{name:'Harees au poulet'}}},
+    ],
+    bundles: [
+      {id:'bd1', name:'باقة السهرة الثنائية', desc:'مقبلات مشكلة + سلطة + مشروبين + حلا — تكفي شخصين', price:95, icon:'🍽️', tags:[],
+        i18n:{en:{name:'Duo Evening Bundle', desc:'Mixed appetizers + a salad + two drinks + a dessert — serves 2'},
+              zh:{name:'双人晚餐套餐'}, es:{name:'Paquete para dos'}, nl:{name:'Duo-avondpakket'}, fr:{name:'Formule duo du soir'}}},
+      {id:'bd2', name:'باقة عائلية صغيرة', desc:'مندي دجاج + سلطتين + مشروبين + حلا — تكفي 2-3 أشخاص', price:145, icon:'👨‍👩‍👧', tags:['bestseller'],
+        i18n:{en:{name:'Small Family Bundle', desc:'Chicken Mandi + two salads + two drinks + a dessert — serves 2-3'},
+              zh:{name:'小家庭套餐'}, es:{name:'Paquete familiar pequeño'}, nl:{name:'Klein familiepakket'}, fr:{name:'Formule familiale petite'}}},
+      {id:'bd3', name:'باقة عائلية متوسطة', desc:'مندي لحم + كبسة دجاج + 3 سلطات + 4 مشروبات + حلاوين — تكفي 4-5 أشخاص', price:260, icon:'👨‍👩‍👧‍👦', tags:[],
+        i18n:{en:{name:'Medium Family Bundle', desc:'Lamb Mandi + Chicken Kabsa + 3 salads + 4 drinks + two desserts — serves 4-5'},
+              zh:{name:'中号家庭套餐'}, es:{name:'Paquete familiar mediano'}, nl:{name:'Middelgroot familiepakket'}, fr:{name:'Formule familiale moyenne'}}},
+      {id:'bd4', name:'باقة عائلية كبيرة', desc:'قوزي لحم + صحن مشاوي كبير + 4 سلطات + 6 مشروبات + 3 حلا — تكفي 6-8 أشخاص', price:420, icon:'👨‍👩‍👧‍👦', tags:[],
+        i18n:{en:{name:'Large Family Bundle', desc:'Lamb Ouzi + Large Mixed Grill Platter + 4 salads + 6 drinks + 3 desserts — serves 6-8'},
+              zh:{name:'大号家庭套餐'}, es:{name:'Paquete familiar grande'}, nl:{name:'Groot familiepakket'}, fr:{name:'Formule familiale grande'}}},
+      {id:'bd5', name:'باقة الديوانية الملكية', desc:'قوزي لحم + مندي لحم + مندي دجاج + صحن مشاوي كبير + سلطات متنوعة + مشروبات وحلا متنوع — تكفي 10-12 شخص', price:650, icon:'👑', tags:[],
+        i18n:{en:{name:'Royal Diwaniya Bundle', desc:'Lamb Ouzi + Lamb Mandi + Chicken Mandi + Large Mixed Grill + assorted salads, drinks and desserts — serves 10-12'},
+              zh:{name:'皇家迪瓦尼亚套餐'}, es:{name:'Paquete Royal Diwaniya'}, nl:{name:'Royal Diwaniya-pakket'}, fr:{name:'Formule Royal Diwaniya'}}},
+      {id:'bd6', name:'باقة الإفطار العائلي', desc:'تشكيلة سمبوسة ومطبق + سلطات + مشروبات ساخنة وباردة + حلا — تكفي 4-5 أشخاص', price:180, icon:'🌅', tags:[],
+        i18n:{en:{name:'Family Breakfast Bundle', desc:'Assorted sambousek and matbaq + salads + hot and cold drinks + dessert — serves 4-5'},
+              zh:{name:'家庭早餐套餐'}, es:{name:'Paquete de desayuno familiar'}, nl:{name:'Familie ontbijtpakket'}, fr:{name:'Formule petit-déjeuner familial'}}},
+    ],
+    hotApp: [
+      {id:'h1', name:'سمبوسة لحم', desc:'مقرمشة محشوة باللحم المفروم', price:18, icon:'🥟', tags:['bestseller'],
+        i18n:{en:{name:'Meat Sambousek', desc:'Crispy pastry filled with seasoned minced meat'},
+              zh:{name:'肉馅三角酥'}, es:{name:'Sambusas de carne'}, nl:{name:'Vlees sambousek'}, fr:{name:'Samboussek à la viande'}}},
+      {id:'h2', name:'سمبوسة جبن', desc:null, price:17, icon:'🥟', tags:['vegetarian'],
+        i18n:{en:{name:'Cheese Sambousek', desc:null},
+              zh:{name:'奶酪三角酥'}, es:{name:'Sambusas de queso'}, nl:{name:'Kaas sambousek'}, fr:{name:'Samboussek au fromage'}}},
+      {id:'h9', name:'سمبوسة دجاج', desc:null, price:18, icon:'🥟', tags:[],
+        i18n:{en:{name:'Chicken Sambousek', desc:null},
+              zh:{name:'鸡肉三角酥'}, es:{name:'Sambusas de pollo'}, nl:{name:'Kip sambousek'}, fr:{name:'Samboussek au poulet'}}},
+      {id:'h3', name:'مطبق لحم', desc:'فطيرة إماراتية محشوة باللحم والبيض والبصل', price:24, icon:'🥞', tags:[],
+        i18n:{en:{name:'Meat Matbaq', desc:'Emirati stuffed pancake filled with meat, egg, and onion'},
+              zh:{name:'肉馅马特巴克薄饼'}, es:{name:'Matbaq de carne'}, nl:{name:'Vlees matbaq'}, fr:{name:'Matbaq à la viande'}}},
+      {id:'h10', name:'مطبق جبن', desc:null, price:22, icon:'🥞', tags:['vegetarian'],
+        i18n:{en:{name:'Cheese Matbaq', desc:null},
+              zh:{name:'奶酪马特巴克薄饼'}, es:{name:'Matbaq de queso'}, nl:{name:'Kaas matbaq'}, fr:{name:'Matbaq au fromage'}}},
+      {id:'h4', name:'روبيان مقرمش بصوص الليمون', desc:null, price:28, icon:'🍤', tags:[],
+        i18n:{en:{name:'Crispy Fried Shrimp with Lemon Sauce', desc:null},
+              zh:{name:'柠檬酱脆炸虾'}, es:{name:'Camarones fritos crujientes con salsa de limón'}, nl:{name:'Krokante garnalen met citroensaus'}, fr:{name:'Crevettes frites croustillantes, sauce citron'}}},
+      {id:'h5', name:'باجلة بالدهن', desc:'فول مطبوخ بالتوابل والسمن على الطريقة البحرينية', price:16, icon:'🫘', tags:['vegetarian'],
+        i18n:{en:{name:'Bajella (Spiced Fava Beans)', desc:'Bahraini-style fava beans cooked with ghee and spices'},
+              zh:{name:'香料蚕豆'}, es:{name:'Habas especiadas (Bajella)'}, nl:{name:'Gekruide tuinbonen (Bajella)'}, fr:{name:'Fèves épicées (Bajella)'}}},
+      {id:'h6', name:'بليلة حارة', desc:'حمص مطبوخ بالتوابل الحارة', price:15, icon:'🌶️', tags:['vegetarian','spicy'],
+        i18n:{en:{name:'Baleela (Spicy Chickpeas)', desc:'Chickpeas simmered in warm spices'},
+              zh:{name:'辣鹰嘴豆'}, es:{name:'Garbanzos picantes (Baleela)'}, nl:{name:'Pittige kikkererwten (Baleela)'}, fr:{name:'Pois chiches épicés (Baleela)'}}},
+      {id:'h7', name:'خبز رقاق بالجبن', desc:'خبز إماراتي رقيق محشو بالجبن', price:19, icon:'🫓', tags:['vegetarian'],
+        i18n:{en:{name:'Cheese Regag Bread', desc:'Thin Emirati bread filled with cheese'},
+              zh:{name:'奶酪拉卡薄饼'}, es:{name:'Pan regag de queso'}, nl:{name:'Kaas regag-brood'}, fr:{name:'Pain regag au fromage'}}},
+      {id:'h8', name:'كبدة مشوية بالكمون', desc:null, price:23, icon:'🍢', tags:['spicy'],
+        i18n:{en:{name:'Grilled Liver with Cumin', desc:null},
+              zh:{name:'孜然烤肝'}, es:{name:'Hígado a la parrilla con comino'}, nl:{name:'Gegrilde lever met komijn'}, fr:{name:'Foie grillé au cumin'}}},
+    ],
+    coldApp: [
+      {id:'c5', name:'لبنة بزيت الزيتون', desc:null, price:17, icon:'🥣', tags:['vegetarian'],
+        i18n:{en:{name:'Labneh with Olive Oil', desc:null},
+              zh:{name:'橄榄油拉巴奶酪'}, es:{name:'Labneh con aceite de oliva'}, nl:{name:'Labneh met olijfolie'}, fr:{name:'Labné à l\u2019huile d\u2019olive'}}},
+      {id:'c7', name:'متبلة زبادي بالنعناع', desc:null, price:15, icon:'🥣', tags:['vegetarian'],
+        i18n:{en:{name:'Minted Yogurt Dip', desc:null},
+              zh:{name:'薄荷酸奶蘸酱'}, es:{name:'Salsa de yogur y menta'}, nl:{name:'Muntyoghurtdip'}, fr:{name:'Trempette au yaourt et à la menthe'}}},
+      {id:'c9', name:'بيض مسلوق بالكمون', desc:null, price:12, icon:'🥚', tags:['vegetarian'],
+        i18n:{en:{name:'Boiled Egg with Cumin', desc:null},
+              zh:{name:'孜然水煮蛋'}, es:{name:'Huevo cocido con comino'}, nl:{name:'Gekookt ei met komijn'}, fr:{name:'Œuf dur au cumin'}}},
+      {id:'c10', name:'جبنة عربية بزيت الزيتون', desc:null, price:16, icon:'🧀', tags:['vegetarian'],
+        i18n:{en:{name:'Arabic Cheese with Olive Oil', desc:null},
+              zh:{name:'橄榄油阿拉伯奶酪'}, es:{name:'Queso árabe con aceite de oliva'}, nl:{name:'Arabische kaas met olijfolie'}, fr:{name:'Fromage arabe à l\u2019huile d\u2019olive'}}},
+      {id:'c11', name:'متبل باذنجان مشوي', desc:null, price:17, icon:'🍆', tags:['vegetarian'],
+        i18n:{en:{name:'Grilled Eggplant Dip', desc:null},
+              zh:{name:'烤茄子蘸酱'}, es:{name:'Puré de berenjena asada'}, nl:{name:'Gegrilde aubergine dip'}, fr:{name:'Purée d\u2019aubergine grillée'}}},
+      {id:'c12', name:'حمص بزيت الزيتون والصنوبر', desc:null, price:16, icon:'🥣', tags:['vegetarian'],
+        i18n:{en:{name:'Hummus with Olive Oil and Pine Nuts', desc:null},
+              zh:{name:'橄榄油松子鹰嘴豆泥'}, es:{name:'Hummus con aceite de oliva y piñones'}, nl:{name:'Hummus met olijfolie en pijnboompitten'}, fr:{name:'Houmous à l\u2019huile d\u2019olive et pignons'}}},
+      {id:'c13', name:'زيتون متبل', desc:null, price:11, icon:'🫒', tags:['vegetarian'],
+        i18n:{en:{name:'Marinated Olives', desc:null},
+              zh:{name:'腌橄榄'}, es:{name:'Aceitunas marinadas'}, nl:{name:'Gemarineerde olijven'}, fr:{name:'Olives marinées'}}},
+      {id:'c14', name:'حلوم بارد بالزعتر', desc:null, price:19, icon:'🧀', tags:['vegetarian'],
+        i18n:{en:{name:'Cold Halloumi with Zaatar', desc:null},
+              zh:{name:'百里香冷哈罗米奶酪'}, es:{name:'Halloumi frío con zaatar'}, nl:{name:'Koude halloumi met zaatar'}, fr:{name:'Halloumi froid au zaatar'}}},
+      {id:'c15', name:'فتة حمص باللبن', desc:null, price:18, icon:'🥣', tags:['vegetarian'],
+        i18n:{en:{name:'Chickpea Yogurt Fatteh', desc:null},
+              zh:{name:'鹰嘴豆酸奶法泰'}, es:{name:'Fatteh de garbanzos con yogur'}, nl:{name:'Kikkererwten-yoghurt fatteh'}, fr:{name:'Fatteh de pois chiches au yaourt'}}},
+      {id:'c16', name:'جبن قريش بالطماطم', desc:null, price:15, icon:'🧀', tags:['vegetarian'],
+        i18n:{en:{name:'Cottage Cheese with Tomato', desc:null},
+              zh:{name:'番茄茅屋奶酪'}, es:{name:'Requesón con tomate'}, nl:{name:'Cottage cheese met tomaat'}, fr:{name:'Fromage cottage à la tomate'}}},
+    ],
+    salads: [
+      {id:'c1', name:'زبادي بالخيار', desc:'زبادي بلدي مع خيار مبشور ونعناع طازج', price:15, icon:'🥣', tags:['vegetarian','bestseller'],
+        i18n:{en:{name:'Cucumber Yogurt Salad', desc:'Homestyle yogurt with grated cucumber and fresh mint'},
+              zh:{name:'黄瓜酸奶沙拉'}, es:{name:'Ensalada de yogur y pepino'}, nl:{name:'Komkommer-yoghurtsalade'}, fr:{name:'Salade de yaourt au concombre'}}},
+      {id:'c2', name:'سلطة خليجية بالطحينة', desc:'خضار طازجة مع صلصة الطحينة', price:18, icon:'🥗', tags:['vegetarian'],
+        i18n:{en:{name:'Gulf Salad with Tahini', desc:'Fresh vegetables with a tahini dressing'},
+              zh:{name:'海湾芝麻酱沙拉'}, es:{name:'Ensalada del Golfo con tahini'}, nl:{name:'Golfsalade met tahin'}, fr:{name:'Salade du Golfe au tahini'}}},
+      {id:'c3', name:'سلطة دقوس', desc:'طماطم وفلفل وثوم مهروسة على الطريقة الخليجية', price:16, icon:'🍅', tags:['vegetarian'],
+        i18n:{en:{name:'Daqous Salad', desc:'Crushed tomato, pepper and garlic, Gulf-style'},
+              zh:{name:'达古斯番茄沙拉'}, es:{name:'Ensalada Daqous'}, nl:{name:'Daqous-salade'}, fr:{name:'Salade Daqous'}}},
+      {id:'c4', name:'سلطة جرجير بالرمان', desc:null, price:20, icon:'🥗', tags:['vegetarian'],
+        i18n:{en:{name:'Arugula Pomegranate Salad', desc:null},
+              zh:{name:'芝麻菜石榴沙拉'}, es:{name:'Ensalada de rúcula y granada'}, nl:{name:'Rucola-granaatappelsalade'}, fr:{name:'Salade roquette-grenade'}}},
+      {id:'c6', name:'سلطة الطماطم والخيار', desc:null, price:14, icon:'🥗', tags:['vegetarian'],
+        i18n:{en:{name:'Tomato Cucumber Salad', desc:null},
+              zh:{name:'番茄黄瓜沙拉'}, es:{name:'Ensalada de tomate y pepino'}, nl:{name:'Tomaat-komkommersalade'}, fr:{name:'Salade tomate-concombre'}}},
+      {id:'c8', name:'سلطة الفجل والجزر', desc:null, price:14, icon:'🥗', tags:['vegetarian'],
+        i18n:{en:{name:'Radish Carrot Salad', desc:null},
+              zh:{name:'萝卜胡萝卜沙拉'}, es:{name:'Ensalada de rábano y zanahoria'}, nl:{name:'Radijs-wortelsalade'}, fr:{name:'Salade radis-carotte'}}},
+      {id:'s7', name:'سلطة خضراء بزيت الزيتون', desc:null, price:15, icon:'🥬', tags:['vegetarian'],
+        i18n:{en:{name:'Green Garden Salad', desc:null},
+              zh:{name:'橄榄油绿色沙拉'}, es:{name:'Ensalada verde con aceite de oliva'}, nl:{name:'Groene tuinsalade'}, fr:{name:'Salade verte à l\u2019huile d\u2019olive'}}},
+      {id:'s8', name:'سلطة الكرنب بالليمون', desc:null, price:13, icon:'🥬', tags:['vegetarian'],
+        i18n:{en:{name:'Cabbage Lemon Salad', desc:null},
+              zh:{name:'柠檬卷心菜沙拉'}, es:{name:'Ensalada de repollo y limón'}, nl:{name:'Koolsalade met citroen'}, fr:{name:'Salade de chou au citron'}}},
+      {id:'s9', name:'سلطة الذرة والفلفل الحلو', desc:null, price:15, icon:'🌽', tags:['vegetarian'],
+        i18n:{en:{name:'Corn & Sweet Pepper Salad', desc:null},
+              zh:{name:'玉米甜椒沙拉'}, es:{name:'Ensalada de maíz y pimiento dulce'}, nl:{name:'Maïs-paprikasalade'}, fr:{name:'Salade de maïs et poivron doux'}}},
+      {id:'s10', name:'سلطة الخس بصوص الطحينة', desc:null, price:14, icon:'🥗', tags:['vegetarian'],
+        i18n:{en:{name:'Lettuce with Tahini Dressing', desc:null},
+              zh:{name:'芝麻酱生菜沙拉'}, es:{name:'Lechuga con aderezo de tahini'}, nl:{name:'Sla met tahindressing'}, fr:{name:'Laitue à la sauce tahini'}}},
+    ],
+    coldDrinks: [
+      {id:'cd1', name:'عصير برتقال طازج', desc:null, price:14, icon:'🍊', tags:[],
+        i18n:{en:{name:'Fresh Orange Juice', desc:null},
+              zh:{name:'鲜榨橙汁'}, es:{name:'Zumo de naranja fresco'}, nl:{name:'Verse sinaasappelsap'}, fr:{name:'Jus d\u2019orange frais'}}},
+      {id:'cd2', name:'ليموناضة بالنعناع', desc:null, price:15, icon:'🍋', tags:['bestseller'],
+        i18n:{en:{name:'Mint Lemonade', desc:null},
+              zh:{name:'薄荷柠檬水'}, es:{name:'Limonada de menta'}, nl:{name:'Muntlimonade'}, fr:{name:'Limonade à la menthe'}}},
+      {id:'cd3', name:'لبن بارد', desc:null, price:12, icon:'🥛', tags:[],
+        i18n:{en:{name:'Chilled Laban', desc:null},
+              zh:{name:'冰镇酸奶饮'}, es:{name:'Laban frío'}, nl:{name:'Gekoelde laban'}, fr:{name:'Laban glacé'}}},
+      {
+        id:'cd4', type:'drinkChoice', icon:'🥤', tags:[],
+        name:'مشروبات غازية', desc:'اختر النكهة والنوع، متوفر بحجم وسط فقط',
+        keywords:'غازي كولا حمضيات برتقال زيرو soft drink cola citrus orange zero',
+        i18n:{en:{name:'Soft Drinks', desc:'Choose your flavor and type — medium size only'},
+              zh:{name:'汽水'}, es:{name:'Refrescos'}, nl:{name:'Frisdrank'}, fr:{name:'Boissons gazeuses'}},
+        size:{label:'وسط', i18n:{en:{label:'Medium'}, zh:{label:'中杯'}, es:{label:'Mediano'}, nl:{label:'Medium'}, fr:{label:'Moyen'}}},
+        flavors:[
+          {key:'citrus', label:'حمضيات', price:10, i18n:{en:{label:'Citrus'}, zh:{label:'柑橘味'}, es:{label:'Cítricos'}, nl:{label:'Citrus'}, fr:{label:'Agrumes'}}},
+          {key:'cola',   label:'كولا',    price:10, i18n:{en:{label:'Cola'}, zh:{label:'可乐'}, es:{label:'Cola'}, nl:{label:'Cola'}, fr:{label:'Cola'}}},
+          {key:'orange', label:'برتقال', price:10, i18n:{en:{label:'Orange'}, zh:{label:'橙味'}, es:{label:'Naranja'}, nl:{label:'Sinaasappel'}, fr:{label:'Orange'}}},
+        ],
+        variants:[
+          {key:'regular', label:'عادي', i18n:{en:{label:'Regular'}, zh:{label:'普通'}, es:{label:'Normal'}, nl:{label:'Normaal'}, fr:{label:'Normal'}}},
+          {key:'zero',    label:'زيرو', i18n:{en:{label:'Zero'}, zh:{label:'无糖'}, es:{label:'Zero'}, nl:{label:'Zero'}, fr:{label:'Zéro'}}},
+        ],
+      },
+      {id:'cd5', name:'شاي مثلج', desc:null, price:13, icon:'🧊', tags:[],
+        i18n:{en:{name:'Iced Tea', desc:null},
+              zh:{name:'冰茶'}, es:{name:'Té helado'}, nl:{name:'IJsthee'}, fr:{name:'Thé glacé'}}},
+      {id:'cd6', name:'عصير تمر هندي', desc:null, price:14, icon:'🥤', tags:[],
+        i18n:{en:{name:'Tamarind Juice', desc:null},
+              zh:{name:'罗望子汁'}, es:{name:'Jugo de tamarindo'}, nl:{name:'Tamarinde sap'}, fr:{name:'Jus de tamarin'}}},
+      {id:'cd7', name:'عصير رمان', desc:null, price:16, icon:'🥤', tags:[],
+        i18n:{en:{name:'Pomegranate Juice', desc:null},
+              zh:{name:'石榴汁'}, es:{name:'Jugo de granada'}, nl:{name:'Granaatappelsap'}, fr:{name:'Jus de grenade'}}},
+      {id:'cd8', name:'سوبيا', desc:'مشروب سعودي تقليدي من الحبوب والفانيليا والقرفة', price:13, icon:'🥤', tags:['vegetarian'],
+        i18n:{en:{name:'Sobia', desc:'Traditional Saudi grain drink with vanilla and cinnamon'},
+              zh:{name:'索比亚饮品'}, es:{name:'Sobia'}, nl:{name:'Sobia'}, fr:{name:'Sobia'}}},
+      {id:'cd9', name:'عصير مانجو', desc:null, price:15, icon:'🥤', tags:[],
+        i18n:{en:{name:'Mango Juice', desc:null},
+              zh:{name:'芒果汁'}, es:{name:'Jugo de mango'}, nl:{name:'Mangosap'}, fr:{name:'Jus de mangue'}}},
+      {id:'cd10', name:'شعير بارد', desc:null, price:12, icon:'🥤', tags:['vegetarian'],
+        i18n:{en:{name:'Barley Drink', desc:null},
+              zh:{name:'冰镇大麦饮'}, es:{name:'Bebida de cebada'}, nl:{name:'Gerstedrank'}, fr:{name:'Boisson à l\u2019orge'}}},
+    ],
+    hotDrinks: [
+      {id:'hd1', name:'قهوة عربية', desc:null, price:12, icon:'☕', tags:['bestseller'],
+        i18n:{en:{name:'Arabic Coffee', desc:null},
+              zh:{name:'阿拉伯咖啡'}, es:{name:'Café árabe'}, nl:{name:'Arabische koffie'}, fr:{name:'Café arabe'}}},
+      {id:'hd2', name:'شاي كرك', desc:'شاي بالحليب والهيل والزعفران على الطريقة الخليجية', price:10, icon:'🍵', tags:['bestseller'],
+        i18n:{en:{name:'Karak Chai', desc:'Milk tea spiced with cardamom and saffron, Gulf-style'},
+              zh:{name:'卡拉克奶茶'}, es:{name:'Té Karak'}, nl:{name:'Karak thee'}, fr:{name:'Thé Karak'}}},
+      {id:'hd3', name:'شاي أحمر', desc:null, price:9, icon:'🍵', tags:[],
+        i18n:{en:{name:'Black Tea', desc:null},
+              zh:{name:'红茶'}, es:{name:'Té negro'}, nl:{name:'Zwarte thee'}, fr:{name:'Thé noir'}}},
+      {id:'hd4', name:'شاي بالهيل', desc:null, price:11, icon:'🍵', tags:[],
+        i18n:{en:{name:'Cardamom Tea', desc:null},
+              zh:{name:'豆蔻茶'}, es:{name:'Té de cardamomo'}, nl:{name:'Kardemomthee'}, fr:{name:'Thé à la cardamome'}}},
+      {id:'hd5', name:'حليب بالزعفران', desc:null, price:16, icon:'🥛', tags:[],
+        i18n:{en:{name:'Saffron Milk', desc:null},
+              zh:{name:'藏红花牛奶'}, es:{name:'Leche de azafrán'}, nl:{name:'Saffraanmelk'}, fr:{name:'Lait au safran'}}},
+      {id:'hd6', name:'قهوة تركية', desc:null, price:13, icon:'☕', tags:[],
+        i18n:{en:{name:'Turkish Coffee', desc:null},
+              zh:{name:'土耳其咖啡'}, es:{name:'Café turco'}, nl:{name:'Turkse koffie'}, fr:{name:'Café turc'}}},
+      {id:'hd7', name:'شاي بالنعناع', desc:null, price:9, icon:'🍵', tags:[],
+        i18n:{en:{name:'Mint Tea', desc:null},
+              zh:{name:'薄荷茶'}, es:{name:'Té de menta'}, nl:{name:'Muntthee'}, fr:{name:'Thé à la menthe'}}},
+      {id:'hd8', name:'سحلب', desc:null, price:15, icon:'🥛', tags:['vegetarian'],
+        i18n:{en:{name:'Sahlab', desc:null},
+              zh:{name:'萨拉卜热饮'}, es:{name:'Sahlab'}, nl:{name:'Sahlab'}, fr:{name:'Sahlab'}}},
+      {id:'hd9', name:'قهوة بالزعفران', desc:null, price:14, icon:'☕', tags:[],
+        i18n:{en:{name:'Saffron Coffee', desc:null},
+              zh:{name:'藏红花咖啡'}, es:{name:'Café de azafrán'}, nl:{name:'Saffraankoffie'}, fr:{name:'Café au safran'}}},
+      {id:'hd10', name:'زنجبيل بالعسل', desc:null, price:11, icon:'🍯', tags:['vegetarian'],
+        i18n:{en:{name:'Ginger Honey Tea', desc:null},
+              zh:{name:'蜂蜜姜茶'}, es:{name:'Té de jengibre y miel'}, nl:{name:'Gember-honingthee'}, fr:{name:'Thé au gingembre et miel'}}},
+    ],
+    dessert: [
+      {id:'d1', name:'لقيمات', desc:'كرات عجين مقلية مقرمشة تُغمس بدبس التمر أو السكر', price:20, icon:'🍯', tags:['bestseller','vegetarian'],
+        i18n:{en:{name:'Luqaimat', desc:'Crispy fried dough balls drizzled with date syrup'},
+              zh:{name:'鲁盖马特炸面团'}, es:{name:'Luqaimat'}, nl:{name:'Luqaimat'}, fr:{name:'Luqaimat'}}},
+      {id:'d2', name:'خبيصة', desc:'حلا خليجي بالتمر والزعفران والهيل', price:19, icon:'🍮', tags:['vegetarian'],
+        i18n:{en:{name:'Khabees', desc:'Gulf date dessert spiced with saffron and cardamom'},
+              zh:{name:'哈比斯枣泥甜点'}, es:{name:'Khabees'}, nl:{name:'Khabees'}, fr:{name:'Khabees'}}},
+      {id:'d3', name:'بثيث', desc:'حلا خليجي من التمر المحشو بالدقيق المحمّص', price:18, icon:'🍪', tags:['new','vegetarian'],
+        i18n:{en:{name:'Batheeth', desc:'Gulf dessert of dates blended with toasted flour'},
+              zh:{name:'巴希斯枣泥甜点'}, es:{name:'Batheeth'}, nl:{name:'Batheeth'}, fr:{name:'Batheeth'}}},
+      {id:'d4', name:'مهلبية بالزعفران', desc:null, price:17, icon:'🍮', tags:['vegetarian'],
+        i18n:{en:{name:'Saffron Muhallabia', desc:null},
+              zh:{name:'藏红花牛奶布丁'}, es:{name:'Muhallabia de azafrán'}, nl:{name:'Saffraan muhallabia'}, fr:{name:'Mouhallabieh au safran'}}},
+      {id:'d5', name:'معصوب', desc:'حلا خليجي من الموز المهروس مع الخبز والكريمة والعسل', price:21, icon:'🍌', tags:[],
+        i18n:{en:{name:"Ma'asoub", desc:'Gulf dessert of mashed banana, bread, cream and honey'},
+              zh:{name:'香蕉面包甜点'}, es:{name:'Ma\u2019asoub'}, nl:{name:'Ma\u2019asoub'}, fr:{name:'Ma\u2019asoub'}}},
+      {id:'d6', name:'عصيدة', desc:null, price:17, icon:'🍯', tags:['vegetarian'],
+        i18n:{en:{name:'Aseeda', desc:null},
+              zh:{name:'阿西达甜点'}, es:{name:'Aseeda'}, nl:{name:'Aseeda'}, fr:{name:'Aseeda'}}},
+      {id:'d7', name:'سمبوسة حلا بالقشطة', desc:null, price:18, icon:'🥟', tags:['vegetarian'],
+        i18n:{en:{name:'Sweet Cream Sambousek', desc:null},
+              zh:{name:'奶油甜三角酥'}, es:{name:'Sambusa dulce de crema'}, nl:{name:'Zoete room-sambousek'}, fr:{name:'Samboussek sucré à la crème'}}},
+      {id:'d8', name:'خبيص الرز', desc:null, price:16, icon:'🍚', tags:['vegetarian'],
+        i18n:{en:{name:'Rice Khabees', desc:null},
+              zh:{name:'米饭哈比斯甜点'}, es:{name:'Khabees de arroz'}, nl:{name:'Rijst khabees'}, fr:{name:'Khabees de riz'}}},
+      {id:'d9', name:'زلابيا', desc:null, price:17, icon:'🍩', tags:['vegetarian'],
+        i18n:{en:{name:'Zalabia', desc:null},
+              zh:{name:'扎拉比亚炸糖球'}, es:{name:'Zalabia'}, nl:{name:'Zalabia'}, fr:{name:'Zalabia'}}},
+      {id:'d10', name:'كليجا', desc:'بسكويت خليجي محشو بالتمر', price:19, icon:'🍪', tags:['vegetarian'],
+        i18n:{en:{name:'Kleicha', desc:'Gulf date-filled cookies'},
+              zh:{name:'克莱查枣饼干'}, es:{name:'Kleicha'}, nl:{name:'Kleicha'}, fr:{name:'Kleicha'}}},
+    ],
+  };
+
+  const ALL = {};
+  Object.values(DISHES).flat().forEach(d => ALL[d.id] = d);
+  const ALL_LIST = Object.values(ALL);
+
+  // ---------- translations ----------
+  const I18N = {
+    ar: {
+      dir:'rtl',
+      ui:{
+        headerEyebrow:'قائمة الطعام', headerTitle:'اسم المطعم', headerSub:'جودة تُذاق، وتجربة تُذكر',
+        searchPlaceholder:'بحث عن طبق...', noResults:'لا توجد أطباق مطابقة',
+        filters:{all:'الكل', bestseller:'الأكثر طلباً', vegetarian:'نباتي', spicy:'حار'},
+        categories:{main:'أطباق رئيسية', bundles:'باقات عائلية', hotApp:'مقبلات ساخنة', coldApp:'مقبلات باردة', salads:'سلطات', coldDrinks:'مشروبات باردة', hotDrinks:'مشروبات حارة', dessert:'حلى'},
+        badges:{bestseller:'الأكثر طلباً', chef:'اختيار الشيف', new:'جديد'},
+        dishCountTemplate:'{n} أطباق', fromLabel:'من', currency:'ر.س', customizeBtn:'تخصيص',
+        cartTitle:'طلبك', emptyCart:'لم تختر أي طبق بعد، تصفّح القائمة واضغط (+) لإضافة طبق.',
+        notesLabel:'ملاحظات على الطلب', notesPlaceholder:'مثال: بدون بصل، إضافة صلصة حارة...',
+        totalLabel:'الإجمالي', confirmOrder:'تأكيد الطلب', copyOrderOnly:'نسخ الطلب فقط', close:'إغلاق',
+        configSizeLabel:'اختر الحجم', configSkewerLabel:'عدّل توزيع الأسياخ (استبدل أي نوع بآخر كما تحب)',
+        distStatusTemplate:'الموزّع: {cur} / {total} سيخ', priceLabel:'السعر', addToCart:'إضافة للسلة', cancel:'إلغاء',
+        botTitle:'🤖 المساعد الذكي', chatPlaceholder:'اكتب سؤالك هنا...',
+        botGreeting:'أهلاً 👋 أنا مساعد المطعم، اسألني عن أي شي بالمنيو أو المطعم.',
+        botFallback:'ما قدرت ألقى إجابة دقيقة لسؤالك 🙏 جرب تسأل عن ساعات العمل، التوصيل، الحجز، أو اسم أي طبق — أو تواصل مباشرة مع فريق المطعم.',
+        trackTitle:'حالة طلبك', orderNumLabel:'رقم الطلب:',
+        trackNote:'هذا تتبّع توضيحي يتحرك تلقائياً لعرض الفكرة. التتبع الحقيقي المرتبط بالمطبخ يحتاج ربط بنظام داخلي.',
+        trackDone:'متابعة التصفح',
+        steps:[
+          {title:'تم استلام طلبك', sub:'وصل طلبك للمطعم وجاري مراجعته'},
+          {title:'جاري تحضير طلبك', sub:'الشيف يجهز أطباقك الآن'},
+          {title:'الطلب جاهز', sub:'طلبك جاهز للاستلام أو التوصيل'},
+        ],
+        settingsTitle:'⚙️ الإعدادات', fontSizeLabel:'حجم الخط', themeLabel:'المظهر', languageLabel:'اللغة',
+        lightMode:'☀️ فاتح', darkMode:'🌙 داكن',
+        toastCopied:'تم نسخ الطلب ✅', toastEmptyCart:'السلة فاضية بعد', toastCopyFail:'تعذّر النسخ، حاول مرة أخرى', toastConfigAdded:'تمت إضافة الصحن للسلة ✅',
+        orderTextHeader:'طلب جديد:', orderTextTotal:'الإجمالي:', orderTextNotes:'ملاحظات:',
+        quickChips:['ساعات العمل','هل يوجد توصيل؟','الأكثر طلباً؟','صحن المشاوي','خيارات نباتية'],
+        perDishLabel:'للطبق',
+        discountLabel:'كود الخصم', discountPlaceholder:'أدخل كود الخصم', applyDiscountBtn:'تطبيق',
+        discountValid:'تم تطبيق الخصم بنجاح ✅', discountInvalid:'كود الخصم غير صحيح', subtotalLabel:'المجموع الفرعي', discountLineLabel:'الخصم',
+        drinkFlavorLabel:'اختر النكهة', drinkVariantLabel:'اختر النوع', drinkSizeNote:'الحجم متوفر بحجم وسط فقط',
+        toastDrinkAdded:'تمت إضافة المشروب للسلة ✅', calLabel:'سعرة',
+        pdfLabel:'القائمة كملف PDF', pdfButton:'تحميل / طباعة القائمة PDF', tableBadgeTemplate:'🍽️ طاولة رقم {n}',
+      },
+      faq:[
+        {kw:['دوام','ساعات','وقت العمل','متى تفتح','متى تفتحون'], a:'نفتح يومياً من الساعة 12 ظهراً وحتى 12 منتصف الليل.'},
+        {kw:['موقع','وين','عنوان','فين المطعم'], a:'تقدر تلقى موقعنا بسهولة عبر خرائط جوجل، اكتب اسم المطعم وراح تظهر لك الإحداثيات والمسار.'},
+        {kw:['توصيل','دلفري','delivery'], a:'نعم نوفر توصيل عبر تطبيقات التوصيل المعتمدة، أو تواصل معنا مباشرة لطلب خاص.'},
+        {kw:['حجز','طاولة','احجز'], a:'تقدر تحجز طاولة بالاتصال علينا مباشرة أو عبر واتساب المطعم.'},
+        {kw:['واي فاي','wifi','انترنت'], a:'نعم متوفر واي فاي مجاني لجميع الزبائن.'},
+        {kw:['مواقف','باركن','parking'], a:'يتوفر مواقف مجانية أمام المطعم.'},
+        {kw:['نباتي','vegetarian'], a:'عندنا عدة خيارات نباتية 🌱: سمبوسة جبن، زبادي بالخيار، سلطة خليجية بالطحينة، سلطة دقوس، سلطة جرجير بالرمان، ولقيمات.'},
+        {kw:['حار','spicy','حراق'], a:'الأطباق الحارة 🌶️ عندنا: روبيان مشوي بالثومية، وبرياني لحم خليجي.'},
+        {kw:['الأكثر طلب','مشهور','مميز','بيست سيلر','تنصحني'], a:'أكثر أطباقنا طلباً 🔥: صحن مشكل مشاوي، كبسة دجاج، مندي لحم، سمبوسة لحم، زبادي بالخيار، شاي كرك، ولقيمات.'},
+        {kw:['مشاوي','اسياخ','صحن مشكل'], a:'صحن المشاوي يأتي بأربعة أحجام: مني 4 أسياخ (40 ر.س)، صغير 8 أسياخ (70 ر.س)، وسط 16 سيخ (130 ر.س)، كبير 32 سيخ (240 ر.س) — وتقدر تخصص نوع كل سيخ بنفسك.'},
+        {kw:['دفع','فيزا','كاش','مدى','بطاقة'], a:'نقبل الدفع نقداً وعبر جميع البطاقات البنكية (مدى، فيزا، ماستركارد).'},
+        {kw:['حساسي','مكونات','غلوتين','allergy'], a:'لو عندك حساسية من مكوّن معين، اذكرها في خانة الملاحظات عند الطلب وفريقنا يتأكد لك قبل التحضير.'},
+        {kw:['شكر','يعطيك العافية','تسلم'], a:'العفو 🌸 يسعدنا نخدمك في أي وقت!'},
+        {kw:['خصم','كود خصم','كوبون','عرض'], a:'عندنا مربع كود خصم قبل تأكيد الطلب — أدخل الكود وراح يتطبق الخصم على الفاتورة تلقائياً.'},
+        {kw:['حلال','ذبح'], a:'جميع أطباقنا حلال 100%، واللحوم مذبوحة على الطريقة الإسلامية.'},
+        {kw:['كحول','خمر','بيرة'], a:'لا نقدم أي مشروبات كحولية، المطعم يلتزم بالضوابط الشرعية بالكامل.'},
+        {kw:['خنزير','لحم خنزير'], a:'لا يوجد أي منتجات لحم خنزير في مطعمنا.'},
+        {kw:['صلاة','مصلى','مسجد'], a:'يتوفر مصلى داخل المطعم للرجال والنساء.'},
+        {kw:['شيشة','معسل','تدخين'], a:'نوفر منطقة خارجية مخصصة للشيشة والتدخين، منفصلة عن الصالة الرئيسية.'},
+        {kw:['أطفال','كرسي أطفال','منطقة ألعاب'], a:'نرحب بالعائلات 👨‍👩‍👧‍👦، ويتوفر كراسي أطفال ومنطقة ألعاب صغيرة.'},
+        {kw:['مجلس','قاعة خاصة','مناسبة خاصة','عزيمة'], a:'يتوفر مجلس خاص للمناسبات والعزائم، تواصل معنا للحجز وتفاصيل السعة.'},
+        {kw:['رسوم توصيل','حد ادنى','حد أدنى الطلب'], a:'رسوم التوصيل ومتطلبات الحد الأدنى تختلف حسب تطبيق التوصيل المستخدم، تقدر تتأكد منها داخل التطبيق مباشرة.'},
+        {kw:['الغاء الطلب','إلغاء الطلب','استرجاع','استرداد'], a:'تقدر تلغي الطلب خلال دقائق من إرساله بالتواصل معنا مباشرة قبل بدء التحضير.'},
+        {kw:['شكوى','تقييم','ملاحظات'], a:'نسعد بأي ملاحظة أو شكوى، تقدر تخبرنا مباشرة عبر المساعد هنا أو تتواصل مع فريق المطعم.'},
+        {kw:['وظيفة','توظيف','تقديم عمل'], a:'نرحب بطلبات التوظيف! تواصل مع إدارة المطعم مباشرة أو زور الفرع لتسليم سيرتك الذاتية.'},
+        {kw:['امتياز','فرنشايز','فرانشايز'], a:'لفرص الامتياز التجاري، تواصل مع إدارة المطعم عبر بيانات التواصل الرسمية.'},
+        {kw:['كرسي متحرك','ذوي الاحتياجات','wheelchair'], a:'المطعم مجهز بمدخل ومرافق مناسبة لذوي الاحتياجات الخاصة.'},
+        {kw:['حيوانات اليفة','كلب','قطة'], a:'يُسمح بالحيوانات الأليفة الصغيرة في الجلسات الخارجية فقط.'},
+        {kw:['فطور','فطار','إفطار الصباح'], a:'نقدم قائمة فطور خاصة من الساعة 7 صباحاً وحتى 11 صباحاً.'},
+        {kw:['رمضان','افطار رمضان','بوفيه'], a:'خلال رمضان نقدم بوفيه إفطار وسحور، تواصل معنا للحجز مسبقاً.'},
+        {kw:['اليوم الوطني','عروض العيد','عرض خاص'], a:'نطلق عروض خاصة في المناسبات الوطنية والأعياد، تابعنا على وسائل التواصل للاطلاع على أحدث العروض.'},
+        {kw:['بطاقة هدايا','قسيمة هدية'], a:'نعم نوفر بطاقات هدايا يمكن شراؤها من المطعم مباشرة.'},
+        {kw:['نقاط ولاء','برنامج ولاء'], a:'لدينا برنامج ولاء يمنحك نقاط مع كل طلب يمكن استبدالها بخصومات مستقبلية.'},
+        {kw:['تطبيق الجوال','تطبيق المطعم'], a:'يمكنك الطلب من خلال هذه القائمة التفاعلية مباشرة، ولا حاجة لتحميل تطبيق منفصل.'},
+        {kw:['انستقرام','تويتر','سناب شات','وسائل التواصل'], a:'تابعنا على حساباتنا الرسمية بمواقع التواصل الاجتماعي للاطلاع على آخر الأطباق والعروض.'},
+        {kw:['لغة الموظفين','يتكلمون'], a:'فريقنا يتحدث العربية والإنجليزية بطلاقة، ويقدر يساعدك بلغتك المفضلة.'},
+        {kw:['مصدر اللحم','مزرعة','مصدر الدجاج'], a:'نستخدم لحوماً ودواجن طازجة من موردين محليين معتمدين وموثوقين.'},
+        {kw:['مياه الشرب','مويه'], a:'نقدم مياه شرب معبأة ومياه مصفاة مجاناً مع كل طلب.'},
+        {kw:['رسوم خدمة','بقشيش','تيب'], a:'لا توجد رسوم خدمة إجبارية، والبقشيش اختياري بالكامل حسب رغبتك.'},
+        {kw:['خصم طلاب','خصم كبار السن'], a:'تحقق من العروض الحالية داخل القائمة أو اسأل فريقنا عن أي خصومات موسمية متاحة.'},
+        {kw:['حجم الوجبة','كمية الطبق','يكفي كم شخص'], a:'أحجام الأطباق مصممة لتكفي شخص واحد بشكل عام، ما عدا صحن المشاوي والقوزي فهي تكفي مجموعات وتقدر تختار الحجم المناسب.'},
+        {kw:['استبدال مكون','بدون بصل','بدون ثوم'], a:'تقدر تطلب استبدال أو حذف أي مكون من خانة الملاحظات عند تأكيد الطلب.'},
+        {kw:['تعقيم','نظافة','معايير السلامة'], a:'نلتزم بأعلى معايير النظافة والسلامة الغذائية في تحضير جميع الأطباق.'},
+        {kw:['جلسة خارجية','تراس','حديقة'], a:'يتوفر جلسات خارجية مفتوحة بجانب الجلسات الداخلية المكيفة.'},
+        {kw:['موسيقى','اجواء','عزف حي'], a:'نوفر أجواء هادئة مع موسيقى خلفية تراثية خفيفة تناسب الأجواء الخليجية.'},
+        {kw:['رقم الهاتف','تواصل معكم','اتصال'], a:'تقدر تتواصل معنا مباشرة عبر رقم الهاتف الموجود بحسابنا الرسمي أو عبر واتساب المطعم.'},
+        {kw:['توصيل مجاني','بدون رسوم توصيل'], a:'التوصيل المجاني يعتمد على قيمة الطلب والمنطقة، تقدر تتأكد من الشروط داخل تطبيق التوصيل.'},
+        {kw:['قائمة أطفال','وجبة أطفال'], a:'نوفر أطباق مناسبة للأطفال بكميات وأسعار مناسبة، اسأل فريقنا عند الطلب.'},
+        {kw:['سعرات حرارية','كالوري'], a:'المعلومات الغذائية والسعرات الحرارية متوفرة عند الطلب من فريقنا مباشرة.'},
+        {kw:['كيترينج','طلبيات كبيرة','تجهيز فعاليات'], a:'نقدم خدمة تجهيز الفعاليات والطلبيات الكبيرة (كيترينج)، تواصل معنا لتفاصيل الأسعار والكميات.'},
+      ],
+    },
+    en: {
+      dir:'ltr',
+      ui:{
+        headerEyebrow:'Menu', headerTitle:'Restaurant Name', headerSub:'Flavor worth tasting, an experience worth remembering',
+        searchPlaceholder:'Search for a dish...', noResults:'No matching dishes',
+        filters:{all:'All', bestseller:'Bestseller', vegetarian:'Vegetarian', spicy:'Spicy'},
+        categories:{main:'Main Dishes', bundles:'Family Bundles', hotApp:'Hot Appetizers', coldApp:'Cold Appetizers', salads:'Salads', coldDrinks:'Cold Drinks', hotDrinks:'Hot Drinks', dessert:'Desserts'},
+        badges:{bestseller:'Bestseller', chef:"Chef's Pick", new:'New'},
+        dishCountTemplate:'{n} dishes', fromLabel:'From', currency:'SAR', customizeBtn:'Customize',
+        cartTitle:'Your Order', emptyCart:"You haven't chosen a dish yet — browse the menu and tap (+) to add one.",
+        notesLabel:'Order notes', notesPlaceholder:'e.g. No onions, extra spicy sauce...',
+        totalLabel:'Total', confirmOrder:'Confirm Order', copyOrderOnly:'Copy order only', close:'Close',
+        configSizeLabel:'Choose a size', configSkewerLabel:'Adjust your skewer mix (swap any type for another)',
+        distStatusTemplate:'Assigned: {cur} / {total} skewers', priceLabel:'Price', addToCart:'Add to cart', cancel:'Cancel',
+        botTitle:'🤖 Smart Assistant', chatPlaceholder:'Type your question here...',
+        botGreeting:"Hi 👋 I'm the restaurant assistant, ask me anything about the menu or the restaurant.",
+        botFallback:"I couldn't find an exact answer 🙏 try asking about opening hours, delivery, reservations, or any dish by name — or contact our team directly.",
+        trackTitle:'Order Status', orderNumLabel:'Order number:',
+        trackNote:'This is a demo timeline that moves automatically to show the concept. A real kitchen-linked tracker needs a connected backend system.',
+        trackDone:'Continue browsing',
+        steps:[
+          {title:'Order received', sub:'Your order reached the restaurant and is being reviewed'},
+          {title:'Preparing your order', sub:'The chef is preparing your dishes now'},
+          {title:'Order ready', sub:'Your order is ready for pickup or delivery'},
+        ],
+        settingsTitle:'⚙️ Settings', fontSizeLabel:'Text size', themeLabel:'Appearance', languageLabel:'Language',
+        lightMode:'☀️ Light', darkMode:'🌙 Dark',
+        toastCopied:'Order copied ✅', toastEmptyCart:'Your cart is still empty', toastCopyFail:'Could not copy, try again', toastConfigAdded:'Platter added to cart ✅',
+        orderTextHeader:'New order:', orderTextTotal:'Total:', orderTextNotes:'Notes:',
+        quickChips:['Opening hours','Do you deliver?','Most popular?','Mixed grill platter','Vegetarian options'],
+        perDishLabel:'per dish',
+        discountLabel:'Discount code', discountPlaceholder:'Enter discount code', applyDiscountBtn:'Apply',
+        discountValid:'Discount applied successfully ✅', discountInvalid:'Invalid discount code', subtotalLabel:'Subtotal', discountLineLabel:'Discount',
+        drinkFlavorLabel:'Choose a flavor', drinkVariantLabel:'Choose a type', drinkSizeNote:'Available in medium size only',
+        toastDrinkAdded:'Drink added to cart ✅', calLabel:'cal',
+        pdfLabel:'Menu as PDF', pdfButton:'Download / Print Menu as PDF', tableBadgeTemplate:'🍽️ Table {n}',
+      },
+      faq:[
+        {kw:['hours','open','opening','time'], a:"We're open daily from 12 PM until 12 AM."},
+        {kw:['location','where','address'], a:'You can find us easily on Google Maps — just search the restaurant name.'},
+        {kw:['delivery','deliver'], a:'Yes, we offer delivery through major delivery apps, or contact us directly for special requests.'},
+        {kw:['reservation','book','table'], a:'You can reserve a table by calling us directly or via WhatsApp.'},
+        {kw:['wifi','internet'], a:'Yes, free WiFi is available for all guests.'},
+        {kw:['parking','park'], a:'Free parking is available in front of the restaurant.'},
+        {kw:['vegetarian','vegan'], a:'We have several vegetarian options 🌱: Cheese Sambousek, Cucumber Yogurt Salad, Gulf Salad with Tahini, Daqous Salad, Arugula Pomegranate Salad, and Luqaimat.'},
+        {kw:['spicy','hot'], a:'Our spicy dishes 🌶️ include: Garlic Grilled Shrimp and Gulf-Style Lamb Biryani.'},
+        {kw:['best seller','popular','recommend','bestseller'], a:'Our most popular dishes 🔥: Mixed Grill Platter, Chicken Kabsa, Lamb Mandi, Meat Sambousek, Cucumber Yogurt Salad, Karak Chai, and Luqaimat.'},
+        {kw:['mixed grill','skewer','platter'], a:'The Mixed Grill Platter comes in 4 sizes: Mini 4 skewers (40 SAR), Small 8 skewers (70 SAR), Medium 16 skewers (130 SAR), Large 32 skewers (240 SAR) — and you can customize each skewer type from the menu.'},
+        {kw:['payment','pay','card','cash'], a:'We accept cash and all major cards (Mada, Visa, Mastercard).'},
+        {kw:['allergy','allergic','gluten'], a:'If you have any allergies, please mention them in the order notes and our team will confirm before preparing your order.'},
+        {kw:['thanks','thank you'], a:"You're welcome 🌸 happy to help anytime!"},
+        {kw:['discount','coupon','promo code','offer'], a:"There's a discount code box before you confirm your order — enter your code and it will be applied to the total automatically."},
+        {kw:['halal','slaughter'], a:'All our dishes are 100% halal, and all meat is slaughtered according to Islamic law.'},
+        {kw:['alcohol','beer','wine'], a:"We don't serve any alcoholic beverages — the restaurant fully complies with Islamic guidelines."},
+        {kw:['pork'], a:'We have no pork products anywhere on our menu.'},
+        {kw:['prayer','mosque','musalla'], a:'A prayer room is available inside the restaurant for both men and women.'},
+        {kw:['shisha','hookah','smoking'], a:'We offer a dedicated outdoor area for shisha and smoking, separate from the main dining hall.'},
+        {kw:['kids','high chair','play area','children'], a:'We welcome families 👨\u200d👩\u200d👧\u200d👦 — high chairs and a small kids\u2019 play area are available.'},
+        {kw:['private room','majlis','event','celebration'], a:'A private majlis room is available for events and celebrations — contact us to book and check capacity.'},
+        {kw:['delivery fee','minimum order'], a:'Delivery fees and minimum order requirements vary by delivery app — you can check them directly within the app.'},
+        {kw:['cancel order','refund'], a:'You can cancel your order within a few minutes of placing it by contacting us directly before preparation starts.'},
+        {kw:['complaint','feedback','review'], a:"We welcome any feedback or complaints — you can tell us directly through this assistant or contact our team."},
+        {kw:['job','career','hiring','apply'], a:'We welcome job applications! Contact restaurant management directly or visit a branch to drop off your CV.'},
+        {kw:['franchise'], a:'For franchise opportunities, please contact restaurant management through our official channels.'},
+        {kw:['wheelchair','accessible','disability'], a:'The restaurant is equipped with accessible entrances and facilities.'},
+        {kw:['pet','dog','cat'], a:'Small pets are allowed in the outdoor seating area only.'},
+        {kw:['breakfast'], a:'We serve a dedicated breakfast menu from 7 AM to 11 AM.'},
+        {kw:['ramadan','iftar','suhoor'], a:'During Ramadan we offer an iftar and suhoor buffet — contact us in advance to reserve.'},
+        {kw:['national day','holiday offer','special offer'], a:'We run special offers on national occasions and holidays — follow us on social media for the latest deals.'},
+        {kw:['gift card','voucher'], a:'Yes, gift cards are available for purchase directly at the restaurant.'},
+        {kw:['loyalty','points program'], a:'We have a loyalty program that earns you points with every order, redeemable for future discounts.'},
+        {kw:['app','mobile app'], a:'You can order directly through this interactive menu — no separate app download needed.'},
+        {kw:['instagram','twitter','snapchat','social media'], a:'Follow our official social media accounts for our latest dishes and offers.'},
+        {kw:['staff language','speak'], a:'Our team speaks fluent Arabic and English, and can assist you in your preferred language.'},
+        {kw:['meat source','farm','chicken source'], a:'We use fresh meat and poultry from trusted, certified local suppliers.'},
+        {kw:['drinking water'], a:'We provide complimentary bottled and filtered drinking water with every order.'},
+        {kw:['service charge','tip','gratuity'], a:'There is no mandatory service charge, and tipping is entirely optional.'},
+        {kw:['student discount','senior discount'], a:'Check the current offers in the menu or ask our team about any seasonal discounts available.'},
+        {kw:['portion size','how much food','serves how many'], a:'Portions are generally designed for one person, except the Mixed Grill Platter and Ouzi, which serve groups — you can pick the size that fits.'},
+        {kw:['substitute ingredient','no onion','no garlic'], a:'You can request to substitute or remove any ingredient in the order notes when confirming your order.'},
+        {kw:['hygiene','sanitize','food safety'], a:'We follow the highest hygiene and food safety standards in preparing every dish.'},
+        {kw:['outdoor seating','terrace','garden'], a:'We offer open-air outdoor seating alongside our air-conditioned indoor seating.'},
+        {kw:['music','ambiance','live band'], a:'We keep a calm atmosphere with light traditional Gulf background music.'},
+        {kw:['phone number','contact number','call you'], a:'You can reach us directly through the phone number on our official page or via WhatsApp.'},
+        {kw:['free delivery'], a:'Free delivery depends on your order value and area — check the exact terms inside the delivery app.'},
+        {kw:['kids menu','children menu'], a:'We offer kid-friendly portions and prices — just ask our team when ordering.'},
+        {kw:['calories','calorie count','nutrition info'], a:'Nutritional and calorie information is available directly from our team upon request.'},
+        {kw:['catering','bulk order','event catering'], a:'We offer catering for events and bulk orders — contact us for pricing and quantity details.'},
+      ],
+    },
+    zh: {
+      dir:'ltr',
+      ui:{
+        headerEyebrow:'菜单', headerTitle:'餐厅名称', headerSub:'值得品尝的美味，难忘的体验',
+        searchPlaceholder:'搜索菜品...', noResults:'没有找到匹配的菜品',
+        filters:{all:'全部', bestseller:'畅销', vegetarian:'素食', spicy:'辣味'},
+        categories:{main:'主菜', bundles:'家庭套餐', hotApp:'热开胃菜', coldApp:'冷开胃菜', salads:'沙拉', coldDrinks:'冷饮', hotDrinks:'热饮', dessert:'甜点'},
+        badges:{bestseller:'畅销', chef:'主厨推荐', new:'新品'},
+        dishCountTemplate:'{n} 道菜', fromLabel:'起价', currency:'沙特里亚尔', customizeBtn:'定制',
+        cartTitle:'您的订单', emptyCart:'您还没有选择任何菜品，请浏览菜单并点击(+)添加。',
+        notesLabel:'订单备注', notesPlaceholder:'例如：不要洋葱，加辣酱...',
+        totalLabel:'总计', confirmOrder:'确认订单', copyOrderOnly:'仅复制订单', close:'关闭',
+        configSizeLabel:'选择份量', configSkewerLabel:'调整烤串搭配',
+        distStatusTemplate:'已分配：{cur} / {total} 串', priceLabel:'价格', addToCart:'加入购物车', cancel:'取消',
+        botTitle:'🤖 智能助手', chatPlaceholder:'在此输入您的问题...',
+        botGreeting:'您好 👋 我是餐厅助手，欢迎咨询菜单或餐厅信息。',
+        botFallback:'抱歉，我没能找到准确答案 🙏 请尝试询问营业时间、外送、预订或菜品名称，或直接联系我们的团队。',
+        trackTitle:'订单状态', orderNumLabel:'订单号：',
+        trackNote:'这是一个自动演示的示意时间线。真实的厨房跟踪需要连接后台系统。',
+        trackDone:'继续浏览',
+        steps:[
+          {title:'订单已收到', sub:'您的订单已送达餐厅，正在处理中'},
+          {title:'正在准备您的订单', sub:'厨师正在准备您的菜品'},
+          {title:'订单已就绪', sub:'您的订单已准备好取餐或配送'},
+        ],
+        settingsTitle:'⚙️ 设置', fontSizeLabel:'字体大小', themeLabel:'外观', languageLabel:'语言',
+        lightMode:'☀️ 浅色', darkMode:'🌙 深色',
+        toastCopied:'订单已复制 ✅', toastEmptyCart:'购物车还是空的', toastCopyFail:'复制失败，请重试', toastConfigAdded:'拼盘已加入购物车 ✅',
+        orderTextHeader:'新订单：', orderTextTotal:'总计：', orderTextNotes:'备注：',
+        quickChips:['营业时间','有外送吗？','最受欢迎的？','烤肉拼盘','素食选项'],
+        perDishLabel:'每份',
+        discountLabel:'优惠码', discountPlaceholder:'输入优惠码', applyDiscountBtn:'应用',
+        discountValid:'优惠已成功应用 ✅', discountInvalid:'优惠码无效', subtotalLabel:'小计', discountLineLabel:'优惠',
+        drinkFlavorLabel:'选择口味', drinkVariantLabel:'选择类型', drinkSizeNote:'仅提供中杯',
+        toastDrinkAdded:'饮品已加入购物车 ✅', calLabel:'千卡',
+        pdfLabel:'PDF 菜单', pdfButton:'下载/打印 PDF 菜单', tableBadgeTemplate:'🍽️ {n} 号桌',
+      },
+    },
+    es: {
+      dir:'ltr',
+      ui:{
+        headerEyebrow:'Menú', headerTitle:'Nombre del restaurante', headerSub:'Un sabor que vale la pena probar, una experiencia inolvidable',
+        searchPlaceholder:'Buscar un plato...', noResults:'No hay platos que coincidan',
+        filters:{all:'Todos', bestseller:'Más pedidos', vegetarian:'Vegetariano', spicy:'Picante'},
+        categories:{main:'Platos principales', bundles:'Paquetes familiares', hotApp:'Entrantes calientes', coldApp:'Entrantes fríos', salads:'Ensaladas', coldDrinks:'Bebidas frías', hotDrinks:'Bebidas calientes', dessert:'Postres'},
+        badges:{bestseller:'Más pedido', chef:'Recomendado del chef', new:'Nuevo'},
+        dishCountTemplate:'{n} platos', fromLabel:'Desde', currency:'SAR', customizeBtn:'Personalizar',
+        cartTitle:'Tu pedido', emptyCart:'Aún no has elegido ningún plato — explora el menú y toca (+) para añadir uno.',
+        notesLabel:'Notas del pedido', notesPlaceholder:'Ej: sin cebolla, salsa extra picante...',
+        totalLabel:'Total', confirmOrder:'Confirmar pedido', copyOrderOnly:'Solo copiar pedido', close:'Cerrar',
+        configSizeLabel:'Elige un tamaño', configSkewerLabel:'Ajusta tu combinación de brochetas',
+        distStatusTemplate:'Asignado: {cur} / {total} brochetas', priceLabel:'Precio', addToCart:'Añadir al carrito', cancel:'Cancelar',
+        botTitle:'🤖 Asistente inteligente', chatPlaceholder:'Escribe tu pregunta aquí...',
+        botGreeting:'Hola 👋 Soy el asistente del restaurante, pregúntame lo que quieras sobre el menú o el restaurante.',
+        botFallback:'No pude encontrar una respuesta exacta 🙏 intenta preguntar sobre horarios, entrega, reservas o el nombre de un plato, o contacta directamente con nuestro equipo.',
+        trackTitle:'Estado del pedido', orderNumLabel:'Número de pedido:',
+        trackNote:'Esta es una línea de tiempo de demostración que avanza automáticamente. Un seguimiento real conectado a la cocina necesita un sistema backend.',
+        trackDone:'Seguir navegando',
+        steps:[
+          {title:'Pedido recibido', sub:'Tu pedido llegó al restaurante y está siendo revisado'},
+          {title:'Preparando tu pedido', sub:'El chef está preparando tus platos ahora'},
+          {title:'Pedido listo', sub:'Tu pedido está listo para recoger o entregar'},
+        ],
+        settingsTitle:'⚙️ Ajustes', fontSizeLabel:'Tamaño del texto', themeLabel:'Apariencia', languageLabel:'Idioma',
+        lightMode:'☀️ Claro', darkMode:'🌙 Oscuro',
+        toastCopied:'Pedido copiado ✅', toastEmptyCart:'Tu carrito sigue vacío', toastCopyFail:'No se pudo copiar, inténtalo de nuevo', toastConfigAdded:'Plato añadido al carrito ✅',
+        orderTextHeader:'Nuevo pedido:', orderTextTotal:'Total:', orderTextNotes:'Notas:',
+        quickChips:['Horario','¿Hacen entregas?','¿Más popular?','Parrillada mixta','Opciones vegetarianas'],
+        perDishLabel:'por plato',
+        discountLabel:'Código de descuento', discountPlaceholder:'Ingresa el código de descuento', applyDiscountBtn:'Aplicar',
+        discountValid:'Descuento aplicado con éxito ✅', discountInvalid:'Código de descuento inválido', subtotalLabel:'Subtotal', discountLineLabel:'Descuento',
+        drinkFlavorLabel:'Elige un sabor', drinkVariantLabel:'Elige un tipo', drinkSizeNote:'Disponible solo en tamaño mediano',
+        toastDrinkAdded:'Bebida añadida al carrito ✅', calLabel:'cal',
+        pdfLabel:'Menú en PDF', pdfButton:'Descargar / Imprimir menú en PDF', tableBadgeTemplate:'🍽️ Mesa {n}',
+      },
+    },
+    nl: {
+      dir:'ltr',
+      ui:{
+        headerEyebrow:'Menu', headerTitle:'Restaurantnaam', headerSub:'Smaak die het proeven waard is, een onvergetelijke ervaring',
+        searchPlaceholder:'Zoek een gerecht...', noResults:'Geen bijpassende gerechten',
+        filters:{all:'Alles', bestseller:'Bestseller', vegetarian:'Vegetarisch', spicy:'Pittig'},
+        categories:{main:'Hoofdgerechten', bundles:'Familiepakketten', hotApp:'Warme voorgerechten', coldApp:'Koude voorgerechten', salads:'Salades', coldDrinks:'Koude dranken', hotDrinks:'Warme dranken', dessert:'Desserts'},
+        badges:{bestseller:'Bestseller', chef:'Chef-aanbeveling', new:'Nieuw'},
+        dishCountTemplate:'{n} gerechten', fromLabel:'Vanaf', currency:'SAR', customizeBtn:'Aanpassen',
+        cartTitle:'Uw bestelling', emptyCart:'U heeft nog geen gerecht gekozen — blader door het menu en tik op (+) om er een toe te voegen.',
+        notesLabel:'Opmerkingen bij bestelling', notesPlaceholder:'Bijv: geen ui, extra pittige saus...',
+        totalLabel:'Totaal', confirmOrder:'Bestelling bevestigen', copyOrderOnly:'Alleen bestelling kopiëren', close:'Sluiten',
+        configSizeLabel:'Kies een formaat', configSkewerLabel:'Pas uw spiesmix aan',
+        distStatusTemplate:'Toegewezen: {cur} / {total} spiesjes', priceLabel:'Prijs', addToCart:'Toevoegen aan winkelwagen', cancel:'Annuleren',
+        botTitle:'🤖 Slimme assistent', chatPlaceholder:'Typ hier uw vraag...',
+        botGreeting:'Hoi 👋 Ik ben de restaurantassistent, vraag me gerust iets over het menu of het restaurant.',
+        botFallback:'Ik kon geen exact antwoord vinden 🙏 probeer te vragen naar openingstijden, bezorging, reserveringen, of een gerecht bij naam — of neem direct contact op met ons team.',
+        trackTitle:'Bestelstatus', orderNumLabel:'Bestelnummer:',
+        trackNote:'Dit is een demo-tijdlijn die automatisch beweegt om het concept te tonen. Een echte keuken-gekoppelde tracker heeft een verbonden backend-systeem nodig.',
+        trackDone:'Verder bladeren',
+        steps:[
+          {title:'Bestelling ontvangen', sub:'Uw bestelling is bij het restaurant aangekomen en wordt beoordeeld'},
+          {title:'Uw bestelling wordt bereid', sub:'De chef bereidt nu uw gerechten'},
+          {title:'Bestelling klaar', sub:'Uw bestelling is klaar om af te halen of te bezorgen'},
+        ],
+        settingsTitle:'⚙️ Instellingen', fontSizeLabel:'Tekstgrootte', themeLabel:'Weergave', languageLabel:'Taal',
+        lightMode:'☀️ Licht', darkMode:'🌙 Donker',
+        toastCopied:'Bestelling gekopieerd ✅', toastEmptyCart:'Uw winkelwagen is nog leeg', toastCopyFail:'Kopiëren mislukt, probeer opnieuw', toastConfigAdded:'Schotel toegevoegd aan winkelwagen ✅',
+        orderTextHeader:'Nieuwe bestelling:', orderTextTotal:'Totaal:', orderTextNotes:'Opmerkingen:',
+        quickChips:['Openingstijden','Bezorgen jullie?','Meest populair?','Gemengde grill','Vegetarische opties'],
+        perDishLabel:'per gerecht',
+        discountLabel:'Kortingscode', discountPlaceholder:'Voer kortingscode in', applyDiscountBtn:'Toepassen',
+        discountValid:'Korting succesvol toegepast ✅', discountInvalid:'Ongeldige kortingscode', subtotalLabel:'Subtotaal', discountLineLabel:'Korting',
+        drinkFlavorLabel:'Kies een smaak', drinkVariantLabel:'Kies een type', drinkSizeNote:'Alleen verkrijgbaar in medium formaat',
+        toastDrinkAdded:'Drankje toegevoegd aan winkelwagen ✅', calLabel:'cal',
+        pdfLabel:'Menu als PDF', pdfButton:'Download / print menu als PDF', tableBadgeTemplate:'🍽️ Tafel {n}',
+      },
+    },
+    fr: {
+      dir:'ltr',
+      ui:{
+        headerEyebrow:'Menu', headerTitle:'Nom du restaurant', headerSub:"Une saveur qui vaut la peine d'être goûtée, une expérience inoubliable",
+        searchPlaceholder:'Rechercher un plat...', noResults:'Aucun plat correspondant',
+        filters:{all:'Tous', bestseller:'Meilleure vente', vegetarian:'Végétarien', spicy:'Épicé'},
+        categories:{main:'Plats principaux', bundles:'Formules familiales', hotApp:'Entrées chaudes', coldApp:'Entrées froides', salads:'Salades', coldDrinks:'Boissons froides', hotDrinks:'Boissons chaudes', dessert:'Desserts'},
+        badges:{bestseller:'Meilleure vente', chef:'Choix du chef', new:'Nouveau'},
+        dishCountTemplate:'{n} plats', fromLabel:'À partir de', currency:'SAR', customizeBtn:'Personnaliser',
+        cartTitle:'Votre commande', emptyCart:"Vous n'avez pas encore choisi de plat — parcourez le menu et appuyez sur (+) pour en ajouter un.",
+        notesLabel:'Notes de commande', notesPlaceholder:'Ex : sans oignon, sauce extra piquante...',
+        totalLabel:'Total', confirmOrder:'Confirmer la commande', copyOrderOnly:'Copier la commande uniquement', close:'Fermer',
+        configSizeLabel:'Choisissez une taille', configSkewerLabel:'Ajustez votre mélange de brochettes',
+        distStatusTemplate:'Attribué : {cur} / {total} brochettes', priceLabel:'Prix', addToCart:'Ajouter au panier', cancel:'Annuler',
+        botTitle:'🤖 Assistant intelligent', chatPlaceholder:'Tapez votre question ici...',
+        botGreeting:"Bonjour 👋 Je suis l'assistant du restaurant, posez-moi vos questions sur le menu ou le restaurant.",
+        botFallback:"Je n'ai pas trouvé de réponse exacte 🙏 essayez de demander les horaires, la livraison, les réservations, ou le nom d'un plat — ou contactez directement notre équipe.",
+        trackTitle:'Statut de la commande', orderNumLabel:'Numéro de commande :',
+        trackNote:"Ceci est une chronologie de démonstration qui avance automatiquement pour illustrer le concept. Un vrai suivi lié à la cuisine nécessite un système backend connecté.",
+        trackDone:'Continuer la navigation',
+        steps:[
+          {title:'Commande reçue', sub:"Votre commande est arrivée au restaurant et est en cours d'examen"},
+          {title:'Préparation de votre commande', sub:'Le chef prépare vos plats maintenant'},
+          {title:'Commande prête', sub:'Votre commande est prête à être récupérée ou livrée'},
+        ],
+        settingsTitle:'⚙️ Paramètres', fontSizeLabel:'Taille du texte', themeLabel:'Apparence', languageLabel:'Langue',
+        lightMode:'☀️ Clair', darkMode:'🌙 Sombre',
+        toastCopied:'Commande copiée ✅', toastEmptyCart:'Votre panier est encore vide', toastCopyFail:'Échec de la copie, réessayez', toastConfigAdded:'Plat ajouté au panier ✅',
+        orderTextHeader:'Nouvelle commande :', orderTextTotal:'Total :', orderTextNotes:'Notes :',
+        quickChips:["Horaires d'ouverture",'Livrez-vous ?','Le plus populaire ?','Assortiment de grillades','Options végétariennes'],
+        perDishLabel:'par plat',
+        discountLabel:'Code promo', discountPlaceholder:'Entrez le code promo', applyDiscountBtn:'Appliquer',
+        discountValid:'Réduction appliquée avec succès ✅', discountInvalid:'Code promo invalide', subtotalLabel:'Sous-total', discountLineLabel:'Réduction',
+        drinkFlavorLabel:'Choisissez une saveur', drinkVariantLabel:'Choisissez un type', drinkSizeNote:'Disponible uniquement en taille moyenne',
+        toastDrinkAdded:'Boisson ajoutée au panier ✅', calLabel:'cal',
+        pdfLabel:'Menu en PDF', pdfButton:'Télécharger / imprimer le menu en PDF', tableBadgeTemplate:'🍽️ Table {n}',
+      },
+    },
+  };
+
+  function FAQ(){ return (I18N[currentLang] && I18N[currentLang].faq) || I18N.en.faq; }
+
+  const LANG_LIST = [
+    {key:'ar', label:'العربية', dir:'rtl'},
+    {key:'en', label:'English', dir:'ltr'},
+    {key:'zh', label:'中文', dir:'ltr'},
+    {key:'es', label:'Español', dir:'ltr'},
+    {key:'nl', label:'Nederlands', dir:'ltr'},
+    {key:'fr', label:'Français', dir:'ltr'},
+  ];
+
+  const BADGE_PRIORITY = ['bestseller'];
+  const BADGE_EMOJI = {bestseller:'🔥'};
+  const MINI_TAG_ICON = { vegetarian:'🌱', spicy:'🌶️' };
+  const FILTER_LIST = [
+    {key:'all', emoji:null},
+    {key:'bestseller', emoji:'🔥'},
+    {key:'vegetarian', emoji:'🌱'},
+    {key:'spicy', emoji:'🌶️'},
+  ];
+  const ZOOM_LEVELS = [0.85, 1, 1.15, 1.3, 1.5];
+
+  // ---------- preferences ----------
+  const PREF_KEY = 'restaurant-menu-prefs';
+  function loadPrefs(){
+    try{ const raw = localStorage.getItem(PREF_KEY); if(raw) return JSON.parse(raw); }catch(e){}
+    return {};
+  }
+  function savePrefs(){
+    try{ localStorage.setItem(PREF_KEY, JSON.stringify({lang:currentLang, zoomIndex, dark:isDark})); }catch(e){}
+  }
+  const prefs = loadPrefs();
+  let currentLang = prefs.lang || 'ar';
+  let zoomIndex = prefs.zoomIndex !== undefined ? prefs.zoomIndex : 1;
+  let isDark = !!prefs.dark;
+
+  function L(){ return I18N[currentLang]; }
+  function tr(obj, field){
+    if(currentLang === 'ar') return obj[field];
+    const v = obj.i18n && obj.i18n[currentLang] && obj.i18n[currentLang][field];
+    if(v !== undefined) return v;
+    const enV = obj.i18n && obj.i18n.en && obj.i18n.en[field];
+    return enV !== undefined ? enV : obj[field];
+  }
+
+  let cartLines = [];
+  let activeFilter = 'all';
+  let tableFromUrl = null;
+  let couponFromUrl = null;
+  try{
+    const params = new URLSearchParams(window.location.search);
+    const t = params.get('table');
+    if(t && /^[a-zA-Z0-9\-]{1,10}$/.test(t)) tableFromUrl = t;
+    const c = params.get('coupon');
+    if(c && /^[a-zA-Z0-9]{1,20}$/.test(c)) couponFromUrl = c.toUpperCase();
+  }catch(e){}
+
+  const zoomWrapEl = document.getElementById('zoomWrap');
+  const navEl = document.getElementById('catNav');
+  const sectionsEl = document.getElementById('menuSections');
+  const noResultsEl = document.getElementById('noResults');
+  const chipsEl = document.getElementById('filterChips');
+
+  function hashCode(str){
+    let h = 0;
+    for(let i=0;i<str.length;i++){ h = (h<<5) - h + str.charCodeAt(i); h |= 0; }
+    return Math.abs(h);
+  }
+  function dishImageUrl(d){
+    const enName = (d.i18n && d.i18n.en && d.i18n.en.name) ? d.i18n.en.name : d.name;
+    const tags = enName.toLowerCase().replace(/[^a-z0-9\s]/g,'').split(/\s+/).filter(Boolean).slice(0,2).join(',') || 'food';
+    const seed = hashCode(d.id);
+    return `https://loremflickr.com/640/480/${encodeURIComponent(tags)},food/all?lock=${seed}`;
+  }
+  function dishImgHtml(d, dName){
+    return `<img src="${dishImageUrl(d)}" alt="${dName}" loading="lazy" decoding="async" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><span class="icon-fallback">${d.icon||'🍽️'}</span>`;
+  }
+
+  const CALORIE_RANGES = {
+    main:[420,780], hotApp:[180,380], coldApp:[90,260], salads:[70,220],
+    coldDrinks:[60,180], hotDrinks:[20,140], dessert:[220,420], bundles:[900,2200],
+  };
+  function dishCalories(d, catKey){
+    const range = CALORIE_RANGES[catKey] || [150,400];
+    const seed = hashCode(d.id + '-cal');
+    return range[0] + (seed % (range[1]-range[0]));
+  }
+  function dishRating(d){
+    const seed = hashCode(d.id + '-rate');
+    const rating = (4.2 + (seed % 71) / 100).toFixed(1);
+    const reviews = 35 + (hashCode(d.id + '-rev') % 460);
+    return {rating, reviews};
+  }
+  function ratingHtml(d){
+    const r = dishRating(d);
+    return `<span class="dish-rating">⭐ ${r.rating} <span class="rc">(${r.reviews})</span></span>`;
+  }
+  function caloriesHtml(d, catKey){
+    return `<span class="dish-cal">🔥 ${dishCalories(d, catKey)} ${L().ui.calLabel}</span>`;
+  }
+
+  function badgeHtml(d){
+    const tags = d.tags||[];
+    const primary = BADGE_PRIORITY.find(t => tags.includes(t));
+    if(!primary) return '';
+    const cls = primary==='bestseller' ? '' : (primary==='chef' ? 'tag-chef' : 'tag-new');
+    return `<span class="badge ${cls}">${BADGE_EMOJI[primary]} ${L().ui.badges[primary]}</span>`;
+  }
+  function miniTagsHtml(d){
+    const tags = d.tags||[];
+    return tags.filter(t => MINI_TAG_ICON[t]).map(t => `<span class="mini-tag">${MINI_TAG_ICON[t]}</span>`).join('');
+  }
+
+  // ---------- filter chips ----------
+  function renderChips(){
+    chipsEl.innerHTML = '';
+    FILTER_LIST.forEach(f => {
+      const chip = document.createElement('button');
+      chip.className = 'chip' + (f.key===activeFilter ? ' active' : '');
+      const label = L().ui.filters[f.key];
+      chip.textContent = f.emoji ? (f.emoji + ' ' + label) : label;
+      chip.addEventListener('click', () => {
+        activeFilter = f.key;
+        Array.from(chipsEl.children).forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        applyFilters();
+      });
+      chipsEl.appendChild(chip);
+    });
+  }
+
+  // ---------- nav + sections ----------
+  function renderNavAndSections(){
+    navEl.innerHTML = '';
+    sectionsEl.innerHTML = '';
+
+    CATEGORIES.forEach((cat, idx) => {
+      const label = L().ui.categories[cat.key];
+      const pill = document.createElement('button');
+      pill.className = 'cat-pill' + (idx===0 ? ' active' : '');
+      pill.textContent = cat.icon + ' ' + label;
+      pill.addEventListener('click', () => {
+        document.getElementById('sec-'+cat.key).scrollIntoView({behavior:'smooth', block:'start'});
+      });
+      navEl.appendChild(pill);
+
+      const sec = document.createElement('section');
+      sec.className = 'cat-section' + (idx % 2 === 1 ? ' alt-bg' : '');
+      sec.id = 'sec-' + cat.key;
+
+      const h2 = document.createElement('h2');
+      h2.textContent = cat.icon + ' ' + label;
+      sec.appendChild(h2);
+
+      const tagEl = document.createElement('span');
+      tagEl.className = 'count-tag';
+      tagEl.textContent = L().ui.dishCountTemplate.replace('{n}', DISHES[cat.key].length);
+      sec.appendChild(tagEl);
+
+      DISHES[cat.key].forEach(d => {
+        const row = document.createElement('div');
+        row.className = 'dish-row';
+        row.id = 'row-' + d.id;
+        const nameForSearch = (d.name + ' ' + (d.i18n && d.i18n.en ? d.i18n.en.name : '') + ' ' + (d.desc||'') + ' ' + (d.keywords||'')).toLowerCase();
+        row.dataset.search = nameForSearch;
+        row.dataset.tags = (d.tags||[]).join(',');
+
+        const dName = tr(d,'name');
+        const dDesc = tr(d,'desc');
+
+        if(d.type === 'configurable'){
+          const minPrice = Math.min(...d.sizes.map(s=>s.price));
+          row.innerHTML = `
+            <div class="dish-left">
+              <div class="dish-icon">${dishImgHtml(d, dName)}</div>
+              <div class="dish-info">
+                <div class="dish-name">${dName} ${miniTagsHtml(d)} ${badgeHtml(d)}</div>
+                ${dDesc ? `<div class="dish-desc">${dDesc}</div>` : ''}
+                <div class="dish-meta">${ratingHtml(d)} ${caloriesHtml(d, cat.key)}</div>
+              </div>
+            </div>
+            <div class="dish-action">
+              <div class="dish-price">${L().ui.fromLabel} ${minPrice} <span class="curr">${L().ui.currency}</span></div>
+              <button class="choose-btn">${L().ui.customizeBtn}</button>
+            </div>`;
+          row.querySelector('.choose-btn').addEventListener('click', () => openConfigModal(d.id));
+        } else if(d.type === 'drinkChoice'){
+          const basePrice = Math.min(...d.flavors.map(f=>f.price));
+          row.innerHTML = `
+            <div class="dish-left">
+              <div class="dish-icon">${dishImgHtml(d, dName)}</div>
+              <div class="dish-info">
+                <div class="dish-name">${dName} ${miniTagsHtml(d)} ${badgeHtml(d)}</div>
+                ${dDesc ? `<div class="dish-desc">${dDesc}</div>` : ''}
+                <div class="dish-meta">${ratingHtml(d)} ${caloriesHtml(d, cat.key)}</div>
+              </div>
+            </div>
+            <div class="dish-action">
+              <div class="dish-price">${L().ui.fromLabel} ${basePrice} <span class="curr">${L().ui.currency}</span></div>
+              <button class="choose-btn">${L().ui.customizeBtn}</button>
+            </div>`;
+          row.querySelector('.choose-btn').addEventListener('click', () => openDrinkModal(d.id));
+        } else {
+          row.innerHTML = `
+            <div class="dish-left">
+              <div class="dish-icon">${dishImgHtml(d, dName)}</div>
+              <div class="dish-info">
+                <div class="dish-name">${dName} ${miniTagsHtml(d)} ${badgeHtml(d)}</div>
+                ${dDesc ? `<div class="dish-desc">${dDesc}</div>` : ''}
+                <div class="dish-meta">${ratingHtml(d)} ${caloriesHtml(d, cat.key)}</div>
+              </div>
+            </div>
+            <div class="dish-action">
+              <div class="dish-price">${d.price} <span class="curr">${L().ui.currency}</span></div>
+              <button class="add-btn" aria-label="${dName}">+</button>
+            </div>`;
+          row.querySelector('.add-btn').addEventListener('click', () => addToCart(d.id));
+        }
+        sec.appendChild(row);
+      });
+
+      sectionsEl.appendChild(sec);
+    });
+
+    // active pill on scroll
+    const pills = Array.from(navEl.children);
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(en => {
+        if(en.isIntersecting){
+          const idx = CATEGORIES.findIndex(c => 'sec-'+c.key === en.target.id);
+          pills.forEach(p => p.classList.remove('active'));
+          if(idx>-1) pills[idx].classList.add('active');
+        }
+      });
+    }, {rootMargin:'-45% 0px -45% 0px'});
+    CATEGORIES.forEach(c => obs.observe(document.getElementById('sec-'+c.key)));
+  }
+
+  // ---------- search + filter ----------
+  const searchInput = document.getElementById('searchInput');
+  const clearSearch = document.getElementById('clearSearch');
+
+  function applyFilters(){
+    const q = searchInput.value.trim().toLowerCase();
+    clearSearch.style.display = q ? 'block' : 'none';
+    navEl.style.display = q ? 'none' : 'flex';
+
+    let totalVisible = 0;
+    document.querySelectorAll('.cat-section').forEach(sec => {
+      let visible = 0;
+      sec.querySelectorAll('.dish-row').forEach(row => {
+        const matchesSearch = !q || row.dataset.search.includes(q);
+        const tags = row.dataset.tags ? row.dataset.tags.split(',') : [];
+        const matchesFilter = activeFilter==='all' || tags.includes(activeFilter);
+        const show = matchesSearch && matchesFilter;
+        row.style.display = show ? '' : 'none';
+        if(show) visible++;
+      });
+      sec.style.display = visible ? '' : 'none';
+      totalVisible += visible;
+    });
+    noResultsEl.style.display = totalVisible ? 'none' : 'block';
+  }
+  searchInput.addEventListener('input', applyFilters);
+  clearSearch.addEventListener('click', () => { searchInput.value=''; applyFilters(); searchInput.focus(); });
+
+  // ---------- cart ----------
+  const cartBubble = document.getElementById('cartBubble');
+  const bubbleCount = document.getElementById('bubbleCount');
+  const bubbleTotal = document.getElementById('bubbleTotal');
+
+  const DISCOUNT_CODES = {
+    'DIWANIYA10': {type:'percent', value:10},
+    'GULF20':     {type:'flat',    value:20},
+    'WELCOME5':   {type:'percent', value:5},
+  };
+  let appliedDiscount = null;
+
+  function computeDiscount(subtotal){
+    if(!appliedDiscount) return 0;
+    if(appliedDiscount.type==='percent') return Math.round(subtotal * appliedDiscount.value / 100);
+    return Math.min(appliedDiscount.value, subtotal);
+  }
+
+  function totals(){
+    let count=0, subtotal=0;
+    cartLines.forEach(l => { count += l.qty; subtotal += l.qty*l.unitPrice; });
+    const discount = computeDiscount(subtotal);
+    return {count, subtotal, discount, total: subtotal - discount};
+  }
+
+  function addToCart(id){
+    const d = ALL[id];
+    let line = cartLines.find(l => l.kind==='simple' && l.dishId===id);
+    if(line){ line.qty++; }
+    else { cartLines.push({lineId:'s-'+id, dishId:id, name:tr(d,'name'), unitPrice:d.price, qty:1, kind:'simple'}); }
+    const row = document.getElementById('row-'+id);
+    row.classList.add('flash');
+    setTimeout(()=>row.classList.remove('flash'), 350);
+    refreshBubble();
+  }
+
+  function addCustomLine(name, unitPrice, detail, station){
+    cartLines.push({lineId:'c-'+Date.now()+Math.random().toString(36).slice(2,6), name, unitPrice, qty:1, detail, kind:'custom', station});
+    refreshBubble();
+  }
+
+  function changeLineQty(lineId, delta){
+    const line = cartLines.find(l => l.lineId===lineId);
+    if(!line) return;
+    line.qty += delta;
+    if(line.qty<=0) cartLines = cartLines.filter(l => l.lineId!==lineId);
+    refreshBubble();
+    renderCartItems();
+  }
+
+  function refreshBubble(){
+    const {count, total} = totals();
+    const word = currentLang==='ar' ? (count===1 ? 'طبق' : 'أطباق') : (count===1 ? 'item' : 'items');
+    bubbleCount.textContent = count + ' ' + word;
+    bubbleTotal.textContent = '· ' + total + ' ' + L().ui.currency;
+    cartBubble.classList.toggle('show', count>0);
+  }
+
+  // ---------- cart sheet ----------
+  const cartOverlay = document.getElementById('cartOverlay');
+  const itemsWrap = document.getElementById('cartItemsWrap');
+  const emptyCartEl = document.getElementById('emptyCart');
+  const totalPriceEl = document.getElementById('totalPrice');
+  const notesInput = document.getElementById('notesInput');
+
+  function renderCartItems(){
+    itemsWrap.innerHTML = '';
+    emptyCartEl.style.display = cartLines.length ? 'none' : 'block';
+
+    cartLines.forEach(line => {
+      const div = document.createElement('div');
+      div.className = 'cart-item';
+      const unitText = line.detail ? line.detail : (line.unitPrice + ' ' + L().ui.currency + ' ' + L().ui.perDishLabel);
+      div.innerHTML = `
+        <div class="ci-info">
+          <div class="ci-name">${line.name}</div>
+          <div class="ci-unit">${unitText}</div>
+        </div>
+        <div class="qty-ctrl">
+          <button data-act="minus">−</button>
+          <span class="qty-num">${line.qty}</span>
+          <button data-act="plus">+</button>
+        </div>
+        <div class="ci-linetotal">${line.unitPrice*line.qty} ${L().ui.currency}</div>`;
+      div.querySelector('[data-act="minus"]').addEventListener('click', ()=>changeLineQty(line.lineId,-1));
+      div.querySelector('[data-act="plus"]').addEventListener('click', ()=>changeLineQty(line.lineId,1));
+      itemsWrap.appendChild(div);
+    });
+
+    const t = totals();
+    totalPriceEl.textContent = t.total;
+    const discountSummary = document.getElementById('discountSummary');
+    if(t.discount > 0){
+      discountSummary.style.display = 'block';
+      document.getElementById('subtotalPrice').textContent = t.subtotal;
+      document.getElementById('discountAmount').textContent = t.discount;
+    } else {
+      discountSummary.style.display = 'none';
+    }
+  }
+
+  function openCart(){ renderCartItems(); cartOverlay.classList.add('open'); }
+  function closeCart(){ cartOverlay.classList.remove('open'); }
+
+  cartBubble.addEventListener('click', openCart);
+  document.getElementById('closeX').addEventListener('click', closeCart);
+  document.getElementById('closeCartBtn').addEventListener('click', closeCart);
+  cartOverlay.addEventListener('click', (e)=>{ if(e.target===cartOverlay) closeCart(); });
+
+  // ---------- discount code ----------
+  const discountInput = document.getElementById('discountInput');
+  const discountMsg = document.getElementById('discountMsg');
+
+  function applyDiscountCode(){
+    const code = discountInput.value.trim().toUpperCase();
+    discountMsg.classList.remove('ok','bad');
+    if(!code){ appliedDiscount = null; discountMsg.textContent = ''; renderCartItems(); refreshBubble(); return; }
+    const found = DISCOUNT_CODES[code];
+    if(found){
+      appliedDiscount = Object.assign({code}, found);
+      discountMsg.textContent = L().ui.discountValid;
+      discountMsg.classList.add('ok');
+    } else {
+      appliedDiscount = null;
+      discountMsg.textContent = L().ui.discountInvalid;
+      discountMsg.classList.add('bad');
+    }
+    renderCartItems();
+    refreshBubble();
+  }
+  document.getElementById('applyDiscountBtn').addEventListener('click', applyDiscountCode);
+  discountInput.addEventListener('keydown', (e) => { if(e.key==='Enter') applyDiscountCode(); });
+
+  // ---------- order text + copy ----------
+  const toastEl = document.getElementById('toast');
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    setTimeout(()=>toastEl.classList.remove('show'), 1800);
+  }
+
+  function buildOrderText(){
+    let lines = [L().ui.orderTextHeader];
+    if(tableFromUrl) lines.push(L().ui.tableBadgeTemplate.replace('{n}', tableFromUrl));
+    cartLines.forEach(line => {
+      const extra = line.detail ? ` (${line.detail})` : '';
+      lines.push(`- ${line.name}${extra} × ${line.qty} = ${line.unitPrice*line.qty} ${L().ui.currency}`);
+    });
+    const t = totals();
+    if(t.discount > 0){
+      lines.push(`${L().ui.subtotalLabel}: ${t.subtotal} ${L().ui.currency}`);
+      lines.push(`${L().ui.discountLineLabel} (${appliedDiscount.code}): -${t.discount} ${L().ui.currency}`);
+    }
+    lines.push(`${L().ui.orderTextTotal} ${t.total} ${L().ui.currency}`);
+    if(notesInput.value.trim()) lines.push(`${L().ui.orderTextNotes} ${notesInput.value.trim()}`);
+    return lines.join('\n');
+  }
+
+  document.getElementById('copyOrderBtn').addEventListener('click', async () => {
+    if(!cartLines.length){ showToast(L().ui.toastEmptyCart); return; }
+    try{ await navigator.clipboard.writeText(buildOrderText()); showToast(L().ui.toastCopied); }
+    catch(e){ showToast(L().ui.toastCopyFail); }
+  });
+
+  // ---------- mixed-grill configurator ----------
+  let currentConfig = null;
+  let selectedSizeKey = null;
+  let distribution = {};
+
+  function currentSize(){ return currentConfig.sizes.find(s => s.key===selectedSizeKey); }
+
+  function setDefaultDistribution(){
+    const total = currentSize().skewers;
+    const types = currentConfig.skewerTypes;
+    const base = Math.floor(total/types.length);
+    const rem = total - base*types.length;
+    distribution = {};
+    types.forEach((t,i) => { distribution[t.key] = base + (i<rem ? 1 : 0); });
+  }
+  function distTotal(){ return Object.values(distribution).reduce((a,b)=>a+b,0); }
+
+  function renderSizeGrid(){
+    const grid = document.getElementById('sizeGrid');
+    grid.innerHTML = '';
+    currentConfig.sizes.forEach(sz => {
+      const div = document.createElement('div');
+      div.className = 'size-opt' + (sz.key===selectedSizeKey ? ' active' : '');
+      div.innerHTML = `<div class="sz-label">${tr(sz,'label')}</div><div class="sz-meta">${sz.skewers} ${currentLang==='ar'?'سيخ':'skewers'}</div><div class="sz-price">${sz.price} ${L().ui.currency}</div>`;
+      div.addEventListener('click', () => {
+        selectedSizeKey = sz.key;
+        renderSizeGrid(); setDefaultDistribution(); renderSkewerList(); updateConfigPrice();
+      });
+      grid.appendChild(div);
+    });
+  }
+
+  function renderSkewerList(){
+    const wrap = document.getElementById('skewerList');
+    wrap.innerHTML = '';
+    const total = currentSize().skewers;
+    currentConfig.skewerTypes.forEach(t => {
+      const row = document.createElement('div');
+      row.className = 'skewer-row';
+      const atMax = distTotal() >= total;
+      row.innerHTML = `
+        <span class="sk-name">${tr(t,'label')}</span>
+        <div class="qty-ctrl">
+          <button data-act="minus" ${distribution[t.key]<=0?'disabled':''}>−</button>
+          <span class="qty-num">${distribution[t.key]}</span>
+          <button data-act="plus" ${atMax?'disabled':''}>+</button>
+        </div>`;
+      row.querySelector('[data-act="minus"]').addEventListener('click', () => {
+        if(distribution[t.key]>0){ distribution[t.key]--; renderSkewerList(); updateDistStatus(); }
+      });
+      row.querySelector('[data-act="plus"]').addEventListener('click', () => {
+        if(distTotal() < total){ distribution[t.key]++; renderSkewerList(); updateDistStatus(); }
+      });
+      wrap.appendChild(row);
+    });
+    updateDistStatus();
+  }
+
+  function updateDistStatus(){
+    const total = currentSize().skewers;
+    const cur = distTotal();
+    const statusEl = document.getElementById('distStatus');
+    statusEl.textContent = L().ui.distStatusTemplate.replace('{cur}', cur).replace('{total}', total);
+    statusEl.classList.remove('ok','bad');
+    const confirmBtn = document.getElementById('confirmConfigBtn');
+    if(cur===total){ statusEl.classList.add('ok'); confirmBtn.disabled = false; }
+    else { statusEl.classList.add('bad'); confirmBtn.disabled = true; }
+  }
+
+  function updateConfigPrice(){ document.getElementById('configPrice').textContent = currentSize().price; }
+
+  function openConfigModal(dishId){
+    currentConfig = ALL[dishId];
+    selectedSizeKey = currentConfig.sizes[1] ? currentConfig.sizes[1].key : currentConfig.sizes[0].key;
+    document.getElementById('configTitle').textContent = tr(currentConfig,'name');
+    renderSizeGrid(); setDefaultDistribution(); renderSkewerList(); updateConfigPrice();
+    document.getElementById('configOverlay').classList.add('open');
+  }
+  function closeConfigModal(){ document.getElementById('configOverlay').classList.remove('open'); }
+
+  document.getElementById('configCloseX').addEventListener('click', closeConfigModal);
+  document.getElementById('cancelConfigBtn').addEventListener('click', closeConfigModal);
+  document.getElementById('configOverlay').addEventListener('click', (e)=>{ if(e.target.id==='configOverlay') closeConfigModal(); });
+
+  document.getElementById('confirmConfigBtn').addEventListener('click', () => {
+    const size = currentSize();
+    const parts = currentConfig.skewerTypes.filter(t => distribution[t.key]>0).map(t => `${distribution[t.key]} ${tr(t,'label')}`);
+    const skewWord = currentLang==='ar' ? 'سيخ' : 'skewers';
+    const detail = parts.join('، ') + ` — ${currentLang==='ar'?'إجمالي':'total'} ${size.skewers} ${skewWord}`;
+    addCustomLine(tr(currentConfig,'name') + ' (' + tr(size,'label') + ')', size.price, detail, 'grill');
+    closeConfigModal();
+    showToast(L().ui.toastConfigAdded);
+  });
+
+  // ---------- soft drink configurator ----------
+  let currentDrink = null;
+  let selectedFlavorKey = null;
+  let selectedVariantKey = null;
+
+  function currentFlavor(){ return currentDrink.flavors.find(f => f.key===selectedFlavorKey); }
+
+  function renderFlavorGrid(){
+    const grid = document.getElementById('flavorGrid');
+    grid.innerHTML = '';
+    currentDrink.flavors.forEach(f => {
+      const div = document.createElement('div');
+      div.className = 'size-opt' + (f.key===selectedFlavorKey ? ' active' : '');
+      div.innerHTML = `<div class="sz-label">${tr(f,'label')}</div><div class="sz-price">${f.price} ${L().ui.currency}</div>`;
+      div.addEventListener('click', () => { selectedFlavorKey = f.key; renderFlavorGrid(); updateDrinkPrice(); });
+      grid.appendChild(div);
+    });
+  }
+
+  function renderVariantToggle(){
+    const wrap = document.getElementById('variantToggle');
+    wrap.innerHTML = '';
+    currentDrink.variants.forEach(v => {
+      const btn = document.createElement('button');
+      btn.className = 'option-pill' + (v.key===selectedVariantKey ? ' active' : '');
+      btn.textContent = tr(v,'label');
+      btn.addEventListener('click', () => { selectedVariantKey = v.key; renderVariantToggle(); });
+      wrap.appendChild(btn);
+    });
+  }
+
+  function updateDrinkPrice(){ document.getElementById('drinkPrice').textContent = currentFlavor().price; }
+
+  function openDrinkModal(dishId){
+    currentDrink = ALL[dishId];
+    selectedFlavorKey = currentDrink.flavors[0].key;
+    selectedVariantKey = currentDrink.variants[0].key;
+    document.getElementById('drinkTitle').textContent = tr(currentDrink,'name');
+    document.getElementById('drinkFlavorLabelText').textContent = L().ui.drinkFlavorLabel;
+    document.getElementById('drinkVariantLabelText').textContent = L().ui.drinkVariantLabel;
+    document.getElementById('drinkSizeNote').textContent = L().ui.drinkSizeNote;
+    document.getElementById('drinkPriceLabelText').textContent = L().ui.priceLabel;
+    document.getElementById('drinkCurrText').textContent = L().ui.currency;
+    document.getElementById('confirmDrinkBtn').textContent = L().ui.addToCart;
+    document.getElementById('cancelDrinkBtn').textContent = L().ui.cancel;
+    renderFlavorGrid(); renderVariantToggle(); updateDrinkPrice();
+    document.getElementById('drinkOverlay').classList.add('open');
+  }
+  function closeDrinkModal(){ document.getElementById('drinkOverlay').classList.remove('open'); }
+
+  document.getElementById('drinkCloseX').addEventListener('click', closeDrinkModal);
+  document.getElementById('cancelDrinkBtn').addEventListener('click', closeDrinkModal);
+  document.getElementById('drinkOverlay').addEventListener('click', (e)=>{ if(e.target.id==='drinkOverlay') closeDrinkModal(); });
+
+  document.getElementById('confirmDrinkBtn').addEventListener('click', () => {
+    const flavor = currentFlavor();
+    const variant = currentDrink.variants.find(v => v.key===selectedVariantKey);
+    const sizeLabel = tr(currentDrink.size, 'label');
+    const detail = `${tr(flavor,'label')} · ${tr(variant,'label')} · ${sizeLabel}`;
+    addCustomLine(tr(currentDrink,'name') + ' (' + tr(flavor,'label') + ')', flavor.price, detail, 'drinks');
+    closeDrinkModal();
+    showToast(L().ui.toastDrinkAdded);
+  });
+
+  // ---------- order tracking ----------
+  const trackOverlay = document.getElementById('trackOverlay');
+  const trackStepsEl = document.getElementById('trackSteps');
+  let trackTimers = [];
+
+  function renderTrackSteps(activeIdx){
+    trackStepsEl.innerHTML = '';
+    L().ui.steps.forEach((s, i) => {
+      const div = document.createElement('div');
+      div.className = 'track-step' + (i<activeIdx ? ' done' : i===activeIdx ? ' active' : '');
+      const icon = i===0 ? '📥' : i===1 ? '👨‍🍳' : '🍽️';
+      div.innerHTML = `
+        <div class="rail"><div class="dot">${i<activeIdx ? '✓' : icon}</div><div class="line"></div></div>
+        <div class="step-text"><div class="step-title">${s.title}</div><div class="step-sub">${s.sub}</div></div>`;
+      trackStepsEl.appendChild(div);
+    });
+  }
+
+  function startOrderTracking(){
+    trackTimers.forEach(t => clearTimeout(t));
+    trackTimers = [];
+    document.getElementById('orderNum').textContent = '#' + Math.floor(1000 + Math.random()*9000);
+    renderTrackSteps(0);
+    trackTimers.push(setTimeout(() => renderTrackSteps(1), 4000));
+    trackTimers.push(setTimeout(() => renderTrackSteps(2), 10000));
+    trackOverlay.classList.add('open');
+  }
+
+  // ---------- push order into the shared kitchen system ----------
+  // Uses the same localStorage schema as the chef/runner/kitchen-board pages,
+  // so once all pages are hosted on the same origin, a confirmed order here
+  // shows up live on those screens.
+  const KITCHEN_STORE_KEY = 'diwaniya-kitchen-orders-v1';
+  const KITCHEN_NUM_KEY = 'diwaniya-kitchen-ordernum-v1';
+  const CATEGORY_TO_STATION = {
+    main:'grill', bundles:'grill', hotApp:'hotApp', coldApp:'coldApp',
+    salads:'coldApp', coldDrinks:'drinks', hotDrinks:'drinks', dessert:'dessert',
+  };
+  function categoryForDishId(id){
+    for(const [catKey, list] of Object.entries(DISHES)){
+      if(list.some(d => d.id===id)) return catKey;
+    }
+    return null;
+  }
+  function pushOrderToKitchen(){
+    let kOrders = [];
+    try{ kOrders = JSON.parse(localStorage.getItem(KITCHEN_STORE_KEY) || '[]'); }catch(e){}
+    let num = 101;
+    try{ num = parseInt(localStorage.getItem(KITCHEN_NUM_KEY) || '101', 10); }catch(e){}
+    try{ localStorage.setItem(KITCHEN_NUM_KEY, String(num+1)); }catch(e){}
+
+    let appSession = {};
+    try{ appSession = JSON.parse(localStorage.getItem('diwaniya-app-session') || '{}'); }catch(e){}
+    const f = appSession.fulfillment || {};
+    const orderType = f.type==='delivery' ? 'delivery' : (f.type==='pickup' ? 'takeaway' : 'dine-in');
+
+    const items = cartLines.map(line => {
+      const station = line.station || CATEGORY_TO_STATION[categoryForDishId(line.dishId)] || 'grill';
+      return { id:'it-'+Math.random().toString(36).slice(2,9), name:line.name, qty:line.qty, station, note:line.detail||'', ready:false };
+    });
+
+    const t = totals();
+    const order = {
+      id:'ord-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),
+      number:num, type:orderType, table:tableFromUrl||null,
+      items, status:'new',
+      note: notesInput.value.trim(),
+      priority:false,
+      createdAt: Date.now(), startedAt:null, readyAt:null, completedAt:null,
+      total: t.total, customerPhone: appSession.phone||null, customerName: appSession.name||null,
+    };
+    kOrders.push(order);
+    try{ localStorage.setItem(KITCHEN_STORE_KEY, JSON.stringify(kOrders)); }catch(e){}
+    return order;
+  }
+
+  document.getElementById('confirmOrderBtn').addEventListener('click', async () => {
+    if(!cartLines.length){ showToast(L().ui.toastEmptyCart); return; }
+    try{ await navigator.clipboard.writeText(buildOrderText()); }catch(e){}
+    pushOrderToKitchen();
+    closeCart();
+    startOrderTracking();
+  });
+  document.getElementById('trackCloseX').addEventListener('click', () => trackOverlay.classList.remove('open'));
+  document.getElementById('trackDoneBtn').addEventListener('click', () => trackOverlay.classList.remove('open'));
+  trackOverlay.addEventListener('click', (e)=>{ if(e.target===trackOverlay) trackOverlay.classList.remove('open'); });
+
+  // ---------- chatbot ----------
+  function findDishByText(t){
+    return ALL_LIST.find(d => {
+      const name = tr(d,'name').toLowerCase();
+      if(t.includes(name)) return true;
+      return name.split(' ').some(w => w.length>2 && t.includes(w));
+    });
+  }
+
+  function getBotReply(raw){
+    const t = raw.trim().toLowerCase();
+    if(!t) return L().ui.botGreeting;
+    const faq = FAQ().find(item => item.kw.some(k => t.includes(k)));
+    if(faq) return faq.a;
+    const dish = findDishByText(t);
+    if(dish){
+      if(dish.type === 'configurable'){
+        const minP = Math.min(...dish.sizes.map(s=>s.price));
+        return `${tr(dish,'name')} ${currentLang==='ar' ? 'يبدأ من' : 'starts from'} ${minP} ${L().ui.currency}${currentLang==='ar' ? '، وله 4 أحجام تقدر تخصصها بنفسك.' : ', with 4 sizes you can customize.'}`;
+      }
+      const desc = tr(dish,'desc');
+      return `${tr(dish,'name')}: ${dish.price} ${L().ui.currency}${desc ? ' — '+desc : ''}.`;
+    }
+    return L().ui.botFallback;
+  }
+
+  const botOverlay = document.getElementById('botOverlay');
+  const chatLog = document.getElementById('chatLog');
+  const chatInput = document.getElementById('chatInput');
+  const quickChipsEl = document.getElementById('quickChips');
+  let botOpenedOnce = false;
+
+  function appendMsg(sender, text){
+    const div = document.createElement('div');
+    div.className = 'msg ' + sender;
+    div.textContent = text;
+    chatLog.appendChild(div);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+
+  function sendUserMessage(text){
+    if(!text.trim()) return;
+    appendMsg('user', text.trim());
+    chatInput.value = '';
+    setTimeout(() => appendMsg('bot', getBotReply(text)), 350);
+  }
+
+  function renderQuickChips(){
+    quickChipsEl.innerHTML = '';
+    L().ui.quickChips.forEach(q => {
+      const chip = document.createElement('button');
+      chip.className = 'quick-chip';
+      chip.textContent = q;
+      chip.addEventListener('click', () => sendUserMessage(q));
+      quickChipsEl.appendChild(chip);
+    });
+  }
+
+  document.getElementById('botBubble').addEventListener('click', () => {
+    document.getElementById('botPing').classList.remove('show');
+    if(!botOpenedOnce){ appendMsg('bot', L().ui.botGreeting); botOpenedOnce = true; }
+    botOverlay.classList.add('open');
+  });
+  document.getElementById('botCloseX').addEventListener('click', () => botOverlay.classList.remove('open'));
+  botOverlay.addEventListener('click', (e)=>{ if(e.target===botOverlay) botOverlay.classList.remove('open'); });
+  document.getElementById('chatSend').addEventListener('click', () => sendUserMessage(chatInput.value));
+  chatInput.addEventListener('keydown', (e) => { if(e.key==='Enter') sendUserMessage(chatInput.value); });
+
+  setTimeout(() => document.getElementById('botPing').classList.add('show'), 1500);
+
+  // ---------- chrome text (static labels) ----------
+  function renderChrome(){
+    const ui = L().ui;
+    document.getElementById('eyebrowText').textContent = ui.headerEyebrow;
+    document.getElementById('titleText').textContent = ui.headerTitle;
+    document.getElementById('subText').textContent = ui.headerSub;
+    searchInput.placeholder = ui.searchPlaceholder;
+    noResultsEl.textContent = ui.noResults;
+
+    const tableBadge = document.getElementById('tableBadge');
+    if(tableFromUrl){
+      tableBadge.style.display = 'inline-flex';
+      tableBadge.textContent = ui.tableBadgeTemplate.replace('{n}', tableFromUrl);
+    } else {
+      tableBadge.style.display = 'none';
+    }
+
+    document.getElementById('cartTitleText').textContent = ui.cartTitle;
+    emptyCartEl.textContent = ui.emptyCart;
+    document.getElementById('notesLabelText').textContent = ui.notesLabel;
+    notesInput.placeholder = ui.notesPlaceholder;
+    document.getElementById('discountLabelText').textContent = ui.discountLabel;
+    document.getElementById('discountInput').placeholder = ui.discountPlaceholder;
+    document.getElementById('applyDiscountBtn').textContent = ui.applyDiscountBtn;
+    document.getElementById('subtotalLabelText').textContent = ui.subtotalLabel;
+    document.getElementById('subtotalCurrText').textContent = ui.currency;
+    document.getElementById('discountLineLabelText').textContent = ui.discountLineLabel;
+    document.getElementById('discountAmountCurrText').textContent = ui.currency;
+    document.getElementById('totalLabelText').textContent = ui.totalLabel;
+    document.getElementById('totalCurrText').textContent = ui.currency;
+    document.getElementById('confirmOrderBtn').textContent = ui.confirmOrder;
+    document.getElementById('copyOrderBtn').textContent = ui.copyOrderOnly;
+    document.getElementById('closeCartBtn').textContent = ui.close;
+
+    document.getElementById('configSizeLabelText').textContent = ui.configSizeLabel;
+    document.getElementById('configSkewerLabelText').textContent = ui.configSkewerLabel;
+    document.getElementById('configPriceLabelText').textContent = ui.priceLabel;
+    document.getElementById('configCurrText').textContent = ui.currency;
+    document.getElementById('confirmConfigBtn').textContent = ui.addToCart;
+    document.getElementById('cancelConfigBtn').textContent = ui.cancel;
+
+    document.getElementById('botTitleText').textContent = ui.botTitle;
+    chatInput.placeholder = ui.chatPlaceholder;
+
+    document.getElementById('trackTitleText').textContent = ui.trackTitle;
+    document.getElementById('orderNumLabelText').textContent = ui.orderNumLabel;
+    document.getElementById('trackNoteText').textContent = ui.trackNote;
+    document.getElementById('trackDoneBtn').textContent = ui.trackDone;
+  }
+
+  // ---------- settings panel ----------
+  const settingsOverlay = document.getElementById('settingsOverlay');
+
+  function applyZoom(){ zoomWrapEl.style.zoom = ZOOM_LEVELS[zoomIndex]; }
+  function applyDark(){ document.documentElement.classList.toggle('dark', isDark); }
+
+  function renderSettingsPanel(){
+    const ui = L().ui;
+    document.getElementById('settingsTitleText').textContent = ui.settingsTitle;
+    document.getElementById('fontSizeLabelText').textContent = ui.fontSizeLabel;
+    document.getElementById('themeLabelText').textContent = ui.themeLabel;
+    document.getElementById('languageLabelText').textContent = ui.languageLabel;
+    document.getElementById('pdfLabelText').textContent = ui.pdfLabel;
+    document.getElementById('downloadPdfBtn').textContent = '🖨️ ' + ui.pdfButton;
+
+    document.getElementById('zoomValue').textContent = Math.round(ZOOM_LEVELS[zoomIndex]*100)+'%';
+    document.getElementById('zoomOutBtn').disabled = zoomIndex===0;
+    document.getElementById('zoomInBtn').disabled = zoomIndex===ZOOM_LEVELS.length-1;
+
+    const lightBtn = document.getElementById('lightBtn');
+    const darkBtn = document.getElementById('darkBtn');
+    lightBtn.textContent = ui.lightMode;
+    darkBtn.textContent = ui.darkMode;
+    lightBtn.classList.toggle('active', !isDark);
+    darkBtn.classList.toggle('active', isDark);
+
+    renderLangToggle();
+  }
+
+  function renderLangToggle(){
+    const wrap = document.getElementById('langToggleWrap');
+    wrap.innerHTML = '';
+    LANG_LIST.forEach(l => {
+      const btn = document.createElement('button');
+      btn.className = 'option-pill' + (l.key===currentLang ? ' active' : '');
+      btn.textContent = l.label;
+      btn.addEventListener('click', () => applyLanguage(l.key));
+      wrap.appendChild(btn);
+    });
+  }
+
+  function closeAllSheets(){
+    ['cartOverlay','configOverlay','drinkOverlay','botOverlay','trackOverlay'].forEach(id => document.getElementById(id).classList.remove('open'));
+  }
+
+  function applyLanguage(lang){
+    if(lang === currentLang) return;
+    currentLang = lang;
+    savePrefs();
+    document.documentElement.lang = lang;
+    document.documentElement.dir = I18N[lang].dir;
+    closeAllSheets();
+    renderChrome();
+    renderChips();
+    renderNavAndSections();
+    applyFilters();
+    renderQuickChips();
+    refreshBubble();
+    renderSettingsPanel();
+  }
+
+  document.getElementById('settingsBtn').addEventListener('click', () => {
+    renderSettingsPanel();
+    settingsOverlay.classList.add('open');
+  });
+  document.getElementById('settingsCloseX').addEventListener('click', () => settingsOverlay.classList.remove('open'));
+  settingsOverlay.addEventListener('click', (e)=>{ if(e.target===settingsOverlay) settingsOverlay.classList.remove('open'); });
+  document.getElementById('downloadPdfBtn').addEventListener('click', () => { window.print(); });
+
+  document.getElementById('zoomOutBtn').addEventListener('click', () => {
+    if(zoomIndex>0){ zoomIndex--; applyZoom(); savePrefs(); renderSettingsPanel(); }
+  });
+  document.getElementById('zoomInBtn').addEventListener('click', () => {
+    if(zoomIndex<ZOOM_LEVELS.length-1){ zoomIndex++; applyZoom(); savePrefs(); renderSettingsPanel(); }
+  });
+  document.getElementById('lightBtn').addEventListener('click', () => { isDark=false; applyDark(); savePrefs(); renderSettingsPanel(); });
+  document.getElementById('darkBtn').addEventListener('click', () => { isDark=true; applyDark(); savePrefs(); renderSettingsPanel(); });
+
+  // ---------- init ----------
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = I18N[currentLang].dir;
+  applyZoom();
+  applyDark();
+  renderChrome();
+  renderChips();
+  renderNavAndSections();
+  applyFilters();
+  renderQuickChips();
+  refreshBubble();
+  if(couponFromUrl){
+    discountInput.value = couponFromUrl;
+    applyDiscountCode();
+  }
+})();
+</script>
+</body>
+</html>
