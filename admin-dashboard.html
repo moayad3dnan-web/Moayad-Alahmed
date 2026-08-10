@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>لوحة تحكم المالك — ديفان الخليج</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FBF3E6; --surface:#F7EAD4; --ink:#3B2A1E; --ink-soft:#8A7259;
+    --line:#E3D2AE; --accent-dark:#6E2A2A; --gold:#C8962A; --gold-tint:#F4E6C8; --gold-strong:#9C7218;
+    --fresh:#3C8F4A; --urgent:#C0392B;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{ background:var(--bg); color:var(--ink); font-family:'Cairo',sans-serif; -webkit-tap-highlight-color:transparent; }
+
+  /* ---------- light Sadu decoration in the empty side margins ---------- */
+  .page-side{
+    position:fixed; top:0; bottom:0; width:calc(50% - 290px); min-width:0; overflow:hidden;
+    z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(135deg, var(--accent-dark) 25%, transparent 25.5%),
+      linear-gradient(225deg, var(--accent-dark) 25%, transparent 25.5%),
+      linear-gradient(45deg, var(--gold) 25%, transparent 25.5%),
+      linear-gradient(315deg, var(--gold) 25%, transparent 25.5%);
+    background-position: 9px 0, 9px 0, 0 0, 0 0;
+    background-size: 18px 18px;
+    background-repeat: repeat;
+    opacity:0.08;
+  }
+  .page-side.l{ left:0; } .page-side.r{ right:0; }
+  @media (max-width: 1080px){ .page-side{ display:none; } }
+  .content-wrap{ position:relative; z-index:1; }
+  button{ font-family:'Cairo',sans-serif; cursor:pointer; transition:transform .12s ease; }
+  button:active{ transform:scale(0.96); }
+  input{ font-family:'Cairo',sans-serif; }
+
+  /* ---------- PIN gate (same proven pattern as staff tools) ---------- */
+  body.pin-locked > *:not(.pin-gate){ display:none !important; }
+  .pin-gate{
+    position:fixed; inset:0; z-index:200; background:#181209; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; padding:30px 20px; text-align:center;
+  }
+  .pin-gate h2{ font-family:'Aref Ruqaa',serif; font-size:24px; color:#E3B45C; margin-bottom:6px; }
+  .pin-gate .sub{ color:#C2A98A; font-size:13px; margin-bottom:24px; }
+  .pin-text-input{
+    width:100%; max-width:280px; padding:16px; border-radius:14px; border:1.5px solid #3A2C1A;
+    background:#221A10; color:#F2E9DA; font-size:22px; text-align:center; letter-spacing:8px; outline:none;
+  }
+  .pin-text-input:focus{ border-color:#E3B45C; }
+  .pin-debug{ color:#8A7259; font-size:11px; margin-top:8px; }
+  .pin-error{ color:#C0392B; font-size:12.5px; font-weight:700; margin-top:10px; display:none; min-height:16px; }
+  .pin-submit{
+    margin-top:18px; width:100%; max-width:280px; padding:14px; border-radius:14px; border:none;
+    background:#E3B45C; color:#241a05; font-weight:800; font-size:15px;
+  }
+
+  /* ---------- dashboard ---------- */
+  .db-header{ text-align:center; padding:24px 16px 10px; }
+  .db-header h1{ font-family:'Aref Ruqaa',serif; font-size:24px; color:var(--gold-strong); }
+  .db-header .sub{ font-size:12px; color:var(--ink-soft); margin-top:4px; }
+  .save-status{ text-align:center; font-size:12px; font-weight:700; min-height:18px; margin-bottom:6px; }
+  .save-status.saving{ color:var(--ink-soft); }
+  .save-status.saved{ color:var(--fresh); }
+  .save-status.error{ color:var(--urgent); }
+  .cat-block{ max-width:560px; margin:0 auto; padding:0 16px 20px; }
+  .cat-title{ font-weight:800; font-size:14px; color:var(--accent-dark); margin:18px 0 8px; }
+  .cat-title-sub{ font-weight:700; font-size:12.5px; color:var(--ink-soft); margin:12px 0 6px; }
+  .dish-row{
+    display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--line);
+    border-radius:14px; padding:10px 12px; margin-bottom:8px;
+  }
+  .dish-row.sold-out{ opacity:0.55; }
+  .dish-name{ flex:1; font-weight:700; font-size:13.5px; min-width:0; }
+  .price-wrap{ display:flex; align-items:center; gap:4px; }
+  .price-wrap input{
+    width:64px; padding:8px 6px; border-radius:10px; border:1px solid var(--line); background:var(--bg);
+    color:var(--ink); font-size:13.5px; text-align:center; outline:none;
+  }
+  .price-wrap input:focus{ border-color:var(--gold); }
+  .price-wrap .orig{ font-size:10.5px; color:var(--ink-soft); }
+  .sold-toggle{
+    padding:7px 10px; border-radius:10px; border:1px solid var(--line); background:var(--bg);
+    font-size:11px; font-weight:700; color:var(--ink-soft); white-space:nowrap;
+  }
+  .sold-toggle.active{ background:var(--urgent); border-color:var(--urgent); color:#fff; }
+  .reset-btn{
+    padding:7px 9px; border-radius:10px; border:none; background:none; color:var(--ink-soft); font-size:15px;
+  }
+
+  /* ---------- tabs ---------- */
+  .tabs{ display:flex; gap:6px; overflow-x:auto; padding:4px 16px 14px; scrollbar-width:none; }
+  .tabs::-webkit-scrollbar{ display:none; }
+  .tab-btn{
+    flex:none; padding:9px 15px; border-radius:20px; border:1.5px solid var(--line); background:var(--surface);
+    color:var(--ink-soft); font-weight:700; font-size:12.5px; white-space:nowrap;
+    transition:background .2s, color .2s, border-color .2s;
+  }
+  .tab-btn.active{ background:var(--gold); border-color:var(--gold); color:#241a05; }
+  .tab-panel{ display:none; max-width:560px; margin:0 auto; padding:0 16px 30px; }
+  .tab-panel.active{ display:block; }
+
+  /* ---------- revenue stats ---------- */
+  .range-switch{ display:flex; gap:8px; margin-bottom:16px; }
+  .range-btn{
+    flex:1; padding:9px; border-radius:12px; border:1px solid var(--line); background:var(--surface);
+    color:var(--ink-soft); font-weight:700; font-size:12.5px; transition:background .2s, color .2s;
+  }
+  .range-btn.active{ background:var(--accent-dark); border-color:var(--accent-dark); color:#fff; }
+  .stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px; }
+  .stat-card{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px; }
+  .stat-label{ font-size:11px; color:var(--ink-soft); font-weight:700; margin-bottom:6px; }
+  .stat-value{ font-size:19px; font-weight:800; color:var(--accent-dark); }
+  .stat-value.up{ color:var(--fresh); }
+  .stat-value.down{ color:var(--urgent); }
+  .bar-row{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .bar-row .label{ width:90px; font-size:12px; font-weight:700; flex:none; }
+  .bar-row .track{ flex:1; height:16px; background:var(--surface); border-radius:8px; overflow:hidden; }
+  .bar-row .fill{ height:100%; background:linear-gradient(90deg, var(--gold), var(--gold-strong)); border-radius:8px; }
+  .bar-row .n{ font-size:11.5px; font-weight:700; color:var(--ink-soft); width:56px; text-align:left; flex:none; }
+
+  /* ---------- best/worst sellers ---------- */
+  .seller-row{
+    display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--line);
+    border-radius:12px; padding:10px 12px; margin-bottom:8px;
+  }
+  .seller-row .rank{ font-weight:800; font-size:14px; color:var(--gold-strong); width:22px; flex:none; }
+  .seller-row .name{ flex:1; font-weight:700; font-size:13px; }
+  .seller-row .qty{ font-size:12px; font-weight:700; color:var(--ink-soft); }
+
+  /* ---------- branches ---------- */
+  .branch-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:10px;
+    display:flex; align-items:center; gap:12px;
+  }
+  .branch-card .ic{ font-size:24px; }
+  .branch-card .t{ font-weight:800; font-size:14px; }
+  .branch-card .s{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+
+  /* ---------- discounts ---------- */
+  .discount-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:10px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .discount-card .code{ font-weight:800; font-size:15px; color:var(--accent-dark); letter-spacing:1px; }
+  .discount-card .val{ font-size:13px; font-weight:700; color:var(--gold-strong); }
+  .note-box{ font-size:11.5px; color:var(--ink-soft); background:var(--gold-tint); border-radius:10px; padding:10px 12px; margin-top:10px; line-height:1.6; }
+  .demo-badge{
+    font-size:11.5px; font-weight:700; color:var(--gold-strong); background:var(--gold-tint);
+    border:1px dashed var(--gold); border-radius:10px; padding:9px 12px; margin-bottom:14px; text-align:center;
+  }
+
+  /* ---------- reports: export / print ---------- */
+  .report-actions{ display:flex; gap:8px; margin-bottom:16px; }
+  .report-btn{
+    flex:1; padding:10px; border-radius:12px; border:1px solid var(--gold); background:none;
+    color:var(--gold-strong); font-weight:700; font-size:12.5px;
+  }
+  .report-btn:active{ background:var(--gold-tint); }
+  .print-header{ display:none; }
+  @media print{
+    body{ background:#fff; color:#000; }
+    .page-side, .tabs, .range-switch, .report-actions, .demo-badge, .note-box,
+    #saveStatus, #staffSaveStatus, .staff-form, .del-btn, .active-toggle,
+    .deduction-add-form, .del-ded, .db-header, .edit-btn, .edit-form{ display:none !important; }
+    .tab-panel{ display:block !important; max-width:none; padding:0; }
+    .print-header{ display:block; text-align:center; margin-bottom:20px; }
+    .print-header h1{ font-family:'Aref Ruqaa',serif; font-size:24px; }
+    .print-header .sub{ font-size:12px; color:#555; margin-top:4px; }
+    .stat-card, .staff-row, .seller-row, .branch-row{ break-inside:avoid; border:1px solid #ccc !important; }
+    .staff-details{ display:block !important; }
+  }
+
+  /* ---------- branch comparison ---------- */
+  .branch-row{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:8px;
+  }
+  .branch-row .top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .branch-row .name{ font-weight:800; font-size:13.5px; }
+  .branch-row .name .rank-tag{ font-size:10px; font-weight:800; padding:2px 8px; border-radius:8px; margin-inline-start:6px; }
+  .branch-row .rank-tag.top{ background:rgba(60,143,74,0.15); color:var(--fresh); }
+  .branch-row .rank-tag.low{ background:rgba(192,57,43,0.12); color:var(--urgent); }
+  .branch-row .rev{ font-weight:800; font-size:13px; color:var(--gold-strong); }
+  .branch-row .track{ height:14px; background:var(--bg); border-radius:8px; overflow:hidden; margin-bottom:4px; }
+  .branch-row .fill{ height:100%; background:linear-gradient(90deg, var(--gold), var(--gold-strong)); border-radius:8px; }
+  .branch-row .sub{ font-size:11px; color:var(--ink-soft); }
+
+  /* ---------- insights: overdue orders, ratings, trend, loyal customers ---------- */
+  .overdue-row{
+    display:flex; align-items:center; gap:10px; background:rgba(192,57,43,0.08); border:1px solid var(--urgent);
+    border-radius:12px; padding:11px 13px; margin-bottom:8px;
+  }
+  .overdue-row .ic{ font-size:18px; }
+  .overdue-row .info{ flex:1; min-width:0; }
+  .overdue-row .t{ font-weight:800; font-size:13px; color:var(--urgent); }
+  .overdue-row .s{ font-size:11px; color:var(--ink-soft); }
+  .rating-bar-row{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .rating-bar-row .stars-lbl{ width:50px; font-size:12px; flex:none; }
+  .rating-bar-row .track{ flex:1; height:12px; background:var(--surface); border-radius:6px; overflow:hidden; }
+  .rating-bar-row .fill{ height:100%; background:linear-gradient(90deg, var(--gold), var(--gold-strong)); }
+  .rating-bar-row .n{ font-size:11px; color:var(--ink-soft); width:24px; text-align:left; flex:none; }
+  .trend-bars{ display:flex; align-items:flex-end; gap:8px; height:140px; padding:10px 4px; }
+  .trend-bar-col{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .trend-bar-col .bar{ width:100%; background:linear-gradient(180deg, var(--gold), var(--gold-strong)); border-radius:6px 6px 0 0; min-height:3px; }
+  .trend-bar-col .val{ font-size:10px; font-weight:700; margin-bottom:4px; color:var(--gold-strong); }
+  .trend-bar-col .lbl{ font-size:10px; color:var(--ink-soft); margin-top:6px; }
+  .loyal-row{
+    display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--line);
+    border-radius:12px; padding:10px 13px; margin-bottom:8px;
+  }
+  .loyal-row .rank{ font-weight:800; font-size:14px; color:var(--gold-strong); width:22px; flex:none; }
+  .loyal-row .info{ flex:1; min-width:0; }
+  .loyal-row .name{ font-weight:700; font-size:13px; }
+  .loyal-row .n{ font-size:11px; color:var(--ink-soft); }
+  .loyal-row .spend{ font-size:12.5px; font-weight:800; color:var(--gold-strong); }
+
+  /* ---------- staff management ---------- */
+  .staff-form{ display:flex; flex-direction:column; gap:8px; margin-bottom:18px; }
+  .staff-form input, .staff-form select{
+    padding:11px 14px; border-radius:12px; border:1px solid var(--line); background:var(--bg);
+    color:var(--ink); font-size:13.5px; outline:none; transition:border-color .2s; font-family:'Cairo',sans-serif;
+  }
+  .staff-form input:focus, .staff-form select:focus{ border-color:var(--gold); }
+  .staff-add-btn{
+    padding:11px; border-radius:12px; border:none; background:var(--gold); color:#241a05;
+    font-weight:800; font-size:13.5px;
+  }
+  .staff-row{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:14px; padding:12px 14px; margin-bottom:8px; cursor:pointer;
+  }
+  .staff-row-top{ display:flex; align-items:center; gap:10px; }
+  .staff-row .avatar{
+    width:34px; height:34px; border-radius:50%; background:var(--gold-tint); color:var(--gold-strong);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; flex:none;
+  }
+  .staff-row .info{ flex:1; min-width:0; }
+  .staff-row .name{ font-weight:700; font-size:13.5px; }
+  .staff-row .name .inactive-tag{ font-size:10px; font-weight:800; color:var(--urgent); background:rgba(192,57,43,0.12); border-radius:8px; padding:1px 7px; margin-inline-start:6px; }
+  .staff-row .meta-line{ font-size:11.5px; color:var(--ink-soft); margin-top:1px; }
+  .staff-row .pin{ font-size:11.5px; color:var(--ink-soft); letter-spacing:1px; }
+  .staff-row .del-btn{ padding:8px 10px; border-radius:10px; border:none; background:none; color:var(--urgent); font-size:15px; }
+  .staff-save-status{ text-align:center; font-size:12px; font-weight:700; min-height:18px; margin-bottom:10px; }
+  .staff-save-status.saving{ color:var(--ink-soft); }
+  .staff-save-status.saved{ color:var(--fresh); }
+  .staff-save-status.error{ color:var(--urgent); }
+  .edit-btn{
+    width:100%; padding:9px; border-radius:10px; border:1px solid var(--gold); background:none;
+    color:var(--gold-strong); font-weight:700; font-size:12px; margin-bottom:12px;
+  }
+  .edit-form{ margin-bottom:12px; }
+  .edit-lbl{ font-size:11px; font-weight:700; color:var(--ink-soft); display:block; margin:8px 0 4px; }
+  .edit-form input, .edit-form select{
+    width:100%; padding:9px 10px; border-radius:10px; border:1px solid var(--line); background:var(--bg);
+    color:var(--ink); font-size:12.5px; outline:none; font-family:'Cairo',sans-serif;
+  }
+  .edit-form input:focus, .edit-form select:focus{ border-color:var(--gold); }
+  .edit-actions{ display:flex; gap:8px; margin-top:12px; }
+  .edit-save-btn{ flex:1; padding:9px; border-radius:10px; border:none; background:var(--fresh); color:#fff; font-weight:700; font-size:12.5px; }
+  .edit-cancel-btn{ flex:1; padding:9px; border-radius:10px; border:1px solid var(--line); background:none; color:var(--ink-soft); font-weight:700; font-size:12.5px; }
+  .staff-details{ display:none; margin-top:12px; padding-top:12px; border-top:1px dashed var(--line); }
+  .staff-details.open{ display:block; }
+  .staff-details .detail-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+  .staff-details .detail-item{ background:var(--bg); border-radius:10px; padding:8px 10px; }
+  .staff-details .detail-item .lbl{ font-size:10.5px; color:var(--ink-soft); }
+  .staff-details .detail-item .val{ font-size:13px; font-weight:700; }
+  .staff-details .active-toggle{
+    width:100%; padding:9px; border-radius:10px; border:1px solid var(--line); background:var(--bg);
+    font-size:12.5px; font-weight:700; color:var(--ink-soft); margin-bottom:12px;
+  }
+  .staff-details .active-toggle.is-active{ color:var(--fresh); border-color:var(--fresh); }
+  .staff-details .active-toggle.is-inactive{ color:var(--urgent); border-color:var(--urgent); }
+  .deduction-title{ font-size:12.5px; font-weight:800; margin-bottom:8px; display:flex; justify-content:space-between; }
+  .deduction-row{
+    display:flex; align-items:center; gap:8px; background:var(--bg); border-radius:10px; padding:8px 10px; margin-bottom:6px;
+  }
+  .deduction-row .reason{ flex:1; font-size:12px; }
+  .deduction-row .date{ font-size:10.5px; color:var(--ink-soft); }
+  .deduction-row .amount{ font-size:12.5px; font-weight:800; color:var(--urgent); }
+  .deduction-row .del-ded{ background:none; border:none; color:var(--ink-soft); font-size:13px; padding:2px 6px; }
+  .deduction-add-form{ display:flex; gap:6px; margin-top:8px; }
+  .deduction-add-form input{
+    flex:1; padding:8px 10px; border-radius:10px; border:1px solid var(--line); background:var(--bg);
+    font-size:12px; outline:none; font-family:'Cairo',sans-serif;
+  }
+  .deduction-add-form input:focus{ border-color:var(--gold); }
+  .deduction-add-btn{ padding:8px 12px; border-radius:10px; border:none; background:var(--urgent); color:#fff; font-weight:700; font-size:12px; }
+  .deduction-add-btn.bonus-btn{ background:var(--fresh); }
+  .deduction-row .amount.bonus{ color:var(--fresh); }
+  .detail-item.highlight{ background:var(--gold-tint); border:1px solid var(--gold); grid-column:1 / -1; }
+  .detail-item.highlight .val{ font-size:16px; color:var(--gold-strong); }
+</style>
+</head>
+<body class="pin-locked">
+<div class="page-side l"></div>
+<div class="page-side r"></div>
+
+
+<div class="pin-gate">
+  <h2>🔒 لوحة تحكم المالك</h2>
+  <div class="sub">أدخل رمز دخول المالك</div>
+  <input type="password" id="pinTextInput" class="pin-text-input" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="••••••">
+  <div class="pin-debug" id="pinDebug">عدد الأرقام المكتوبة: 0</div>
+  <div class="pin-error" id="pinError">رمز غير صحيح، حاول مرة ثانية</div>
+  <button class="pin-submit" id="pinSubmit">دخول</button>
+</div>
+<script>
+(function(){
+  var OWNER_PIN = '550012';
+  var STORAGE_KEY = 'diwaniya-owner-pin-ok';
+
+  function unlockNow(){
+    document.body.classList.remove('pin-locked');
+    var gate = document.querySelector('.pin-gate');
+    if(gate) gate.style.display = 'none';
+  }
+  try{ if(localStorage.getItem(STORAGE_KEY)==='1') unlockNow(); }catch(e){}
+
+  function tryUnlock(){
+    try{
+      var input = document.getElementById('pinTextInput');
+      var err = document.getElementById('pinError');
+      var entered = (input && input.value ? input.value : '').replace(/[^0-9]/g, '');
+      if(err){ err.style.display = 'block'; err.style.color = '#C0392B'; }
+      if(entered === OWNER_PIN){
+        try{ localStorage.setItem(STORAGE_KEY, '1'); }catch(e2){}
+        if(err){ err.textContent = '✅ تطابق! جاري الفتح...'; err.style.color = '#3C8F4A'; }
+        unlockNow();
+      } else {
+        if(err) err.textContent = 'رمز غير صحيح — كتبت ' + entered.length + ' رقم (المطلوب ' + OWNER_PIN.length + ')';
+        if(input){ input.value = ''; input.focus(); }
+        var dbg = document.getElementById('pinDebug');
+        if(dbg) dbg.textContent = 'عدد الأرقام المكتوبة: 0';
+      }
+    }catch(fatalErr){
+      var err2 = document.getElementById('pinError');
+      if(err2){ err2.style.display = 'block'; err2.style.color = '#C0392B'; err2.textContent = 'خطأ برمجي: ' + fatalErr.message; }
+    }
+  }
+  function wireUp(){
+    var input = document.getElementById('pinTextInput');
+    var btn = document.getElementById('pinSubmit');
+    var dbg = document.getElementById('pinDebug');
+    if(btn){
+      btn.addEventListener('click', tryUnlock);
+      btn.addEventListener('touchend', function(e){ e.preventDefault(); tryUnlock(); });
+    }
+    if(input){
+      input.addEventListener('keydown', function(e){ if(e.key==='Enter') tryUnlock(); });
+      input.addEventListener('input', function(){
+        var err = document.getElementById('pinError');
+        if(err) err.style.display = 'none';
+        if(dbg) dbg.textContent = 'عدد الأرقام المكتوبة: ' + input.value.replace(/[^0-9]/g,'').length;
+      });
+      setTimeout(function(){ input.focus(); }, 100);
+    }
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', wireUp);
+  } else {
+    wireUp();
+  }
+})();
+</script>
+
+<div class="db-header">
+  <h1>🎛️ Restaurant Manager</h1>
+  <div class="sub">مركز قيادة ديفان الخليج — كل شي بمكان وحد</div>
+</div>
+
+<div class="tabs" id="mgrTabs">
+  <button class="tab-btn active" data-tab="revenue">💰 الإيرادات</button>
+  <button class="tab-btn" data-tab="prices">🍽️ الأسعار</button>
+  <button class="tab-btn" data-tab="bestsellers">📊 الأكثر مبيعاً</button>
+  <button class="tab-btn" data-tab="branches">🏬 الفروع</button>
+  <button class="tab-btn" data-tab="discounts">🎟️ الخصومات</button>
+  <button class="tab-btn" data-tab="staff">👥 الموظفين</button>
+  <button class="tab-btn" data-tab="insights">📈 رؤى إضافية</button>
+</div>
+
+<div class="tab-panel active" id="panel-revenue">
+  <div class="print-header"><h1>تقرير الإيرادات — ديفان الخليج</h1><div class="sub" id="printRevenueDate"></div></div>
+  <div class="demo-badge" id="demoBadgeRevenue" style="display:none;">📊 بيانات توضيحية — بتتحدث تلقائياً أول ما تبدأ طلبات حقيقية توصل</div>
+  <div class="range-switch" id="rangeSwitch">
+    <button class="range-btn active" data-range="week">هالأسبوع</button>
+    <button class="range-btn" data-range="month">هالشهر</button>
+    <button class="range-btn" data-range="year">هالسنة</button>
+  </div>
+  <div class="report-actions">
+    <button class="report-btn" id="printRevenueBtn">🖨️ طباعة التقرير</button>
+    <button class="report-btn" id="exportRevenueBtn">⬇️ تصدير CSV</button>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">إجمالي الإيرادات</div><div class="stat-value" id="statRevenue">—</div></div>
+    <div class="stat-card"><div class="stat-label">عدد الطلبات</div><div class="stat-value" id="statOrders">—</div></div>
+    <div class="stat-card"><div class="stat-label">متوسط قيمة الطلب</div><div class="stat-value" id="statAvg">—</div></div>
+    <div class="stat-card"><div class="stat-label">مقارنة بالفترة السابقة</div><div class="stat-value" id="statCompare">—</div></div>
+  </div>
+  <div class="cat-title">توزيع نوع الطلب</div>
+  <div id="typeBreakdown"></div>
+  <div class="cat-title">🏬 مقارنة الفروع</div>
+  <div id="branchCompare"></div>
+  <div class="cat-title">📈 اتجاه المبيعات (آخر 6 فترات)</div>
+  <div id="salesTrend"></div>
+  <div class="cat-title">أوقات الذروة</div>
+  <div id="peakHours"></div>
+</div>
+
+<div class="tab-panel" id="panel-prices">
+  <div class="save-status" id="saveStatus"></div>
+  <div id="dishList"></div>
+</div>
+
+<div class="tab-panel" id="panel-bestsellers">
+  <div class="demo-badge" id="demoBadgeSellers" style="display:none;">📊 بيانات توضيحية — بتتحدث تلقائياً أول ما تبدأ طلبات حقيقية توصل</div>
+  <div class="range-switch" id="bsRangeSwitch">
+    <button class="range-btn active" data-range="week">هالأسبوع</button>
+    <button class="range-btn" data-range="month">هالشهر</button>
+    <button class="range-btn" data-range="year">هالسنة</button>
+  </div>
+  <div class="cat-title">🔥 الأكثر طلباً</div>
+  <div id="topSellers"></div>
+  <div class="cat-title">🐌 الأقل طلباً</div>
+  <div id="lowSellers"></div>
+</div>
+
+<div class="tab-panel" id="panel-branches">
+  <div id="branchesList"></div>
+</div>
+
+<div class="tab-panel" id="panel-discounts">
+  <div id="discountsList"></div>
+</div>
+
+<div class="tab-panel" id="panel-staff">
+  <div class="staff-save-status" id="staffSaveStatus"></div>
+  <div class="cat-title">إضافة موظف جديد</div>
+  <div class="staff-form">
+    <input type="text" id="newStaffName" placeholder="اسم الموظف" maxlength="40">
+    <input type="text" id="newStaffPin" inputmode="numeric" placeholder="رمز مكوّن من 4-6 أرقام" maxlength="6">
+    <input type="text" id="newStaffPosition" placeholder="الوظيفة (مثال: شيف، نادل، كاشير)" maxlength="30">
+    <input type="text" id="newStaffRank" placeholder="الرتبة (مثال: مبتدئ، رئيسي)" maxlength="30">
+    <select id="newStaffBranch"><option value="">اختر الفرع</option></select>
+    <input type="number" id="newStaffSalary" inputmode="decimal" placeholder="الراتب الشهري (ر.س)" min="0">
+    <button class="staff-add-btn" id="addStaffBtn">➕ إضافة</button>
+  </div>
+  <div class="cat-title">الموظفين الحاليين</div>
+  <div class="print-header"><h1>كشف الرواتب — ديفان الخليج</h1><div class="sub" id="printPayrollDate"></div></div>
+  <div class="report-actions">
+    <button class="report-btn" id="printPayrollBtn">🖨️ طباعة كشف الرواتب</button>
+    <button class="report-btn" id="exportPayrollBtn">⬇️ تصدير CSV</button>
+  </div>
+  <div id="staffList"></div>
+  <div class="note-box">📝 كل موظف يدخل برمزه الخاص بشاشة الشيف، موزّع الطلبات، ولوحة المطبخ. احذف موظف من هنا يلغي وصوله فوراً بدون ما يأثر على الباقي. اضغط على أي بطاقة موظف لتشوف تفاصيله وتضيف خصومات.</div>
+</div>
+
+<div class="tab-panel" id="panel-insights">
+  <div class="demo-badge" id="demoBadgeInsights" style="display:none;">📊 بيانات توضيحية — بتتحدث تلقائياً أول ما تبدأ طلبات حقيقية توصل</div>
+
+  <div class="cat-title">⏰ طلبات متأخرة</div>
+  <div id="overdueOrders"></div>
+
+  <div class="cat-title">⭐ تقييمات الزبائن</div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">متوسط تقييم الطلبات</div><div class="stat-value" id="statAvgRating">—</div></div>
+    <div class="stat-card"><div class="stat-label">متوسط تقييم سهولة الاستخدام</div><div class="stat-value" id="statAvgUsability">—</div></div>
+  </div>
+  <div id="ratingBreakdown"></div>
+  <div class="cat-title-sub">📝 ملاحظات سهولة الاستخدام</div>
+  <div id="usabilityNotesList"></div>
+
+  <div class="cat-title">👑 الزبائن الأكثر ولاءً</div>
+  <div id="loyalCustomers"></div>
+</div>
+
+<script>
+(function(){
+  // Tab and range-switch navigation is pure UI — must work instantly regardless of
+  // whether Firebase has finished loading, so it lives in its own plain script.
+  function wireNav(){
+    document.getElementById('mgrTabs').addEventListener('click', (e) => {
+      const btn = e.target.closest('.tab-btn'); if(!btn) return;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b===btn));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + btn.dataset.tab));
+    });
+    document.getElementById('rangeSwitch').addEventListener('click', (e) => {
+      const btn = e.target.closest('.range-btn'); if(!btn) return;
+      document.querySelectorAll('#rangeSwitch .range-btn').forEach(b => b.classList.toggle('active', b===btn));
+      if(window.setRevenueRange) window.setRevenueRange(btn.dataset.range);
+    });
+    document.getElementById('bsRangeSwitch').addEventListener('click', (e) => {
+      const btn = e.target.closest('.range-btn'); if(!btn) return;
+      document.querySelectorAll('#bsRangeSwitch .range-btn').forEach(b => b.classList.toggle('active', b===btn));
+      if(window.setBsRange) window.setBsRange(btn.dataset.range);
+    });
+    document.getElementById('addStaffBtn').addEventListener('click', () => {
+      const nameInput = document.getElementById('newStaffName');
+      const pinInput = document.getElementById('newStaffPin');
+      const positionInput = document.getElementById('newStaffPosition');
+      const rankInput = document.getElementById('newStaffRank');
+      const branchInput = document.getElementById('newStaffBranch');
+      const salaryInput = document.getElementById('newStaffSalary');
+      const statusEl = document.getElementById('staffSaveStatus');
+      if(!window.addStaffMember){
+        statusEl.textContent = '⏳ جارِ الاتصال بالخادم، حاول بعد ثوانٍ...';
+        statusEl.className = 'staff-save-status error';
+        return;
+      }
+      const result = window.addStaffMember(nameInput.value.trim(), pinInput.value.trim(), {
+        position: positionInput.value.trim(),
+        rank: rankInput.value.trim(),
+        branch: branchInput.value,
+        salary: parseFloat(salaryInput.value) || 0,
+      });
+      if(result.ok){
+        nameInput.value = '';
+        pinInput.value = '';
+        positionInput.value = '';
+        rankInput.value = '';
+        branchInput.value = '';
+        salaryInput.value = '';
+      } else {
+        statusEl.textContent = result.msg;
+        statusEl.className = 'staff-save-status error';
+      }
+    });
+
+    const todayAr = new Date().toLocaleDateString('ar-SA', {day:'2-digit', month:'2-digit', year:'numeric'});
+
+    document.getElementById('printRevenueBtn').addEventListener('click', () => {
+      document.getElementById('printRevenueDate').textContent = 'بتاريخ ' + todayAr;
+      window.print();
+    });
+    document.getElementById('exportRevenueBtn').addEventListener('click', () => {
+      if(!window.getRevenueExportRows){ alert('⏳ جارِ الاتصال بالخادم، حاول بعد ثوانٍ...'); return; }
+      window.downloadCsv(window.getRevenueExportRows(), 'تقرير-الإيرادات.csv');
+    });
+    document.getElementById('printPayrollBtn').addEventListener('click', () => {
+      document.getElementById('printPayrollDate').textContent = 'بتاريخ ' + todayAr;
+      window.print();
+    });
+    document.getElementById('exportPayrollBtn').addEventListener('click', () => {
+      if(!window.getPayrollExportRows){ alert('⏳ جارِ الاتصال بالخادم، حاول بعد ثوانٍ...'); return; }
+      window.downloadCsv(window.getPayrollExportRows(), 'كشف-الرواتب.csv');
+    });
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', wireNav);
+  } else {
+    wireNav();
+  }
+
+  // Branches and discounts are static lists — render them immediately too,
+  // no need to wait on Firebase for content that never depends on it.
+  const BRANCHES = [
+    {name:'فرع النخيل', area:'', icon:'🏬'},
+    {name:'فرع الدمام', area:'', icon:'🏬'},
+    {name:'فرع المبرز', area:'', icon:'🏬'},
+    {name:'فرع الخبر', area:'', icon:'🏬'},
+    {name:'فرع الشاطئ', area:'', icon:'🏬'},
+  ];
+  window.BRANCHES = BRANCHES;
+  function renderStatic(){
+    document.getElementById('branchesList').innerHTML = BRANCHES.map(b => `
+      <div class="branch-card"><div class="ic">${b.icon}</div><div><div class="t">${b.name}</div>${b.area ? `<div class="s">${b.area}</div>` : ''}</div></div>
+    `).join('') + `<div class="note-box">📝 هذي القائمة يدوية حالياً — لو فتحتوا فرع جديد أو غيّرتوا موقع، قولّي أحدّثها لك بالكود مباشرة.</div>`;
+
+    const DISCOUNTS = [
+      {code:'DIWANIYA10', desc:'خصم 10% على إجمالي الطلب'},
+      {code:'GULF20', desc:'خصم ثابت 20 ر.س على الطلب'},
+      {code:'WELCOME5', desc:'خصم ترحيبي 5% للعملاء الجدد'},
+    ];
+    document.getElementById('discountsList').innerHTML = DISCOUNTS.map(d => `
+      <div class="discount-card"><div class="code">${d.code}</div><div class="val">${d.desc}</div></div>
+    `).join('') + `<div class="note-box">📝 هذي القائمة يدوية حالياً — تحتاج تعديل بالكود مباشرة لو ودك تضيف أو تلغي كود خصم. لو تحبون، أقدر أطور هذا الجزء ليصير قابل للتعديل من هنا زي الأسعار تماماً.</div>`;
+
+    const branchSelect = document.getElementById('newStaffBranch');
+    BRANCHES.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b.name;
+      opt.textContent = b.name;
+      branchSelect.appendChild(opt);
+    });
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', renderStatic);
+  } else {
+    renderStatic();
+  }
+})();
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyASZzpHN3naZ3UxlRGS-VaDiNZV4-upmzA",
+    authDomain: "professional-restaurant-system.firebaseapp.com",
+    projectId: "professional-restaurant-system",
+    storageBucket: "professional-restaurant-system.firebasestorage.app",
+    messagingSenderId: "809714960687",
+    appId: "1:809714960687:web:649fc13dd48972052139da",
+    measurementId: "G-397FXE7298"
+  };
+  const fbApp = initializeApp(firebaseConfig);
+  const db = getFirestore(fbApp);
+  const overridesRef = doc(db, 'diwaniya', 'menuOverrides');
+  const staffAccountsRef = doc(db, 'diwaniya', 'staffAccounts');
+
+  const CATALOG = [{"id": "m1", "name": "كبسة دجاج", "price": 42, "cat": "main"}, {"id": "m6", "name": "كبسة لحم", "price": 48, "cat": "main"}, {"id": "m2", "name": "مندي لحم", "price": 58, "cat": "main"}, {"id": "m7", "name": "مندي دجاج", "price": 46, "cat": "main"}, {"id": "m3", "name": "زبيدي مشوي", "price": 52, "cat": "main"}, {"id": "m8", "name": "روبيان مشوي بالثومية", "price": 65, "cat": "main"}, {"id": "m5", "name": "برياني لحم خليجي", "price": 46, "cat": "main"}, {"id": "m9", "name": "قوزي لحم", "price": 72, "cat": "main"}, {"id": "m10", "name": "هريس دجاج", "price": 38, "cat": "main"}, {"id": "bd1", "name": "باقة السهرة الثنائية", "price": 95, "cat": "bundles"}, {"id": "bd2", "name": "باقة عائلية صغيرة", "price": 145, "cat": "bundles"}, {"id": "bd3", "name": "باقة عائلية متوسطة", "price": 260, "cat": "bundles"}, {"id": "bd4", "name": "باقة عائلية كبيرة", "price": 420, "cat": "bundles"}, {"id": "bd5", "name": "باقة الديوانية الملكية", "price": 650, "cat": "bundles"}, {"id": "bd6", "name": "باقة الإفطار العائلي", "price": 180, "cat": "bundles"}, {"id": "h1", "name": "سمبوسة لحم", "price": 18, "cat": "hotApp"}, {"id": "h2", "name": "سمبوسة جبن", "price": 17, "cat": "hotApp"}, {"id": "h9", "name": "سمبوسة دجاج", "price": 18, "cat": "hotApp"}, {"id": "h3", "name": "مطبق لحم", "price": 24, "cat": "hotApp"}, {"id": "h10", "name": "مطبق جبن", "price": 22, "cat": "hotApp"}, {"id": "h4", "name": "روبيان مقرمش بصوص الليمون", "price": 28, "cat": "hotApp"}, {"id": "h5", "name": "باجلة بالدهن", "price": 16, "cat": "hotApp"}, {"id": "h6", "name": "بليلة حارة", "price": 15, "cat": "hotApp"}, {"id": "h7", "name": "خبز رقاق بالجبن", "price": 19, "cat": "hotApp"}, {"id": "h8", "name": "كبدة مشوية بالكمون", "price": 23, "cat": "hotApp"}, {"id": "c5", "name": "لبنة بزيت الزيتون", "price": 17, "cat": "coldApp"}, {"id": "c7", "name": "متبلة زبادي بالنعناع", "price": 15, "cat": "coldApp"}, {"id": "c9", "name": "بيض مسلوق بالكمون", "price": 12, "cat": "coldApp"}, {"id": "c10", "name": "جبنة عربية بزيت الزيتون", "price": 16, "cat": "coldApp"}, {"id": "c11", "name": "متبل باذنجان مشوي", "price": 17, "cat": "coldApp"}, {"id": "c12", "name": "حمص بزيت الزيتون والصنوبر", "price": 16, "cat": "coldApp"}, {"id": "c13", "name": "زيتون متبل", "price": 11, "cat": "coldApp"}, {"id": "c14", "name": "حلوم بارد بالزعتر", "price": 19, "cat": "coldApp"}, {"id": "c15", "name": "فتة حمص باللبن", "price": 18, "cat": "coldApp"}, {"id": "c16", "name": "جبن قريش بالطماطم", "price": 15, "cat": "coldApp"}, {"id": "c1", "name": "زبادي بالخيار", "price": 15, "cat": "salads"}, {"id": "c2", "name": "سلطة خليجية بالطحينة", "price": 18, "cat": "salads"}, {"id": "c3", "name": "سلطة دقوس", "price": 16, "cat": "salads"}, {"id": "c4", "name": "سلطة جرجير بالرمان", "price": 20, "cat": "salads"}, {"id": "c6", "name": "سلطة الطماطم والخيار", "price": 14, "cat": "salads"}, {"id": "c8", "name": "سلطة الفجل والجزر", "price": 14, "cat": "salads"}, {"id": "s7", "name": "سلطة خضراء بزيت الزيتون", "price": 15, "cat": "salads"}, {"id": "s8", "name": "سلطة الكرنب بالليمون", "price": 13, "cat": "salads"}, {"id": "s9", "name": "سلطة الذرة والفلفل الحلو", "price": 15, "cat": "salads"}, {"id": "s10", "name": "سلطة الخس بصوص الطحينة", "price": 14, "cat": "salads"}, {"id": "cd1", "name": "عصير برتقال طازج", "price": 14, "cat": "coldDrinks"}, {"id": "cd2", "name": "ليموناضة بالنعناع", "price": 15, "cat": "coldDrinks"}, {"id": "cd3", "name": "لبن بارد", "price": 12, "cat": "coldDrinks"}, {"id": "cd5", "name": "شاي مثلج", "price": 13, "cat": "coldDrinks"}, {"id": "cd6", "name": "عصير تمر هندي", "price": 14, "cat": "coldDrinks"}, {"id": "cd7", "name": "عصير رمان", "price": 16, "cat": "coldDrinks"}, {"id": "cd8", "name": "سوبيا", "price": 13, "cat": "coldDrinks"}, {"id": "cd9", "name": "عصير مانجو", "price": 15, "cat": "coldDrinks"}, {"id": "cd10", "name": "شعير بارد", "price": 12, "cat": "coldDrinks"}, {"id": "hd1", "name": "قهوة عربية", "price": 12, "cat": "hotDrinks"}, {"id": "hd2", "name": "شاي كرك", "price": 10, "cat": "hotDrinks"}, {"id": "hd3", "name": "شاي أحمر", "price": 9, "cat": "hotDrinks"}, {"id": "hd4", "name": "شاي بالهيل", "price": 11, "cat": "hotDrinks"}, {"id": "hd5", "name": "حليب بالزعفران", "price": 16, "cat": "hotDrinks"}, {"id": "hd6", "name": "قهوة تركية", "price": 13, "cat": "hotDrinks"}, {"id": "hd7", "name": "شاي بالنعناع", "price": 9, "cat": "hotDrinks"}, {"id": "hd8", "name": "سحلب", "price": 15, "cat": "hotDrinks"}, {"id": "hd9", "name": "قهوة بالزعفران", "price": 14, "cat": "hotDrinks"}, {"id": "hd10", "name": "زنجبيل بالعسل", "price": 11, "cat": "hotDrinks"}, {"id": "d1", "name": "لقيمات", "price": 20, "cat": "dessert"}, {"id": "d2", "name": "خبيصة", "price": 19, "cat": "dessert"}, {"id": "d3", "name": "بثيث", "price": 18, "cat": "dessert"}, {"id": "d4", "name": "مهلبية بالزعفران", "price": 17, "cat": "dessert"}, {"id": "d5", "name": "معصوب", "price": 21, "cat": "dessert"}, {"id": "d6", "name": "عصيدة", "price": 17, "cat": "dessert"}, {"id": "d7", "name": "سمبوسة حلا بالقشطة", "price": 18, "cat": "dessert"}, {"id": "d8", "name": "خبيص الرز", "price": 16, "cat": "dessert"}, {"id": "d9", "name": "زلابيا", "price": 17, "cat": "dessert"}, {"id": "d10", "name": "كليجا", "price": 19, "cat": "dessert"}];
+  const CAT_LABELS = {"bundles": "👨‍👩‍👧‍👦 باقات العائلة", "main": "🍛 الأطباق الرئيسية", "hotApp": "🔥 مقبلات ساخنة", "coldApp": "🥗 مقبلات باردة", "salads": "🥬 سلطات", "coldDrinks": "🧊 مشروبات باردة", "hotDrinks": "☕ مشروبات ساخنة", "dessert": "🍰 حلويات"};
+  const CAT_ORDER = ["bundles", "main", "hotApp", "coldApp", "salads", "coldDrinks", "hotDrinks", "dessert"];
+
+  let overrides = {};
+  let saveTimer = null;
+
+  function setStatus(text, cls){
+    const el = document.getElementById('saveStatus');
+    el.textContent = text;
+    el.className = 'save-status' + (cls ? ' ' + cls : '');
+  }
+
+  function scheduleSave(){
+    setStatus('جارِ الحفظ...', 'saving');
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      setDoc(overridesRef, { items: overrides, updatedAt: Date.now() })
+        .then(() => setStatus('✅ تم الحفظ — يظهر للزبائن الآن', 'saved'))
+        .catch((e) => setStatus('⚠️ تعذّر الحفظ — تأكد من الإنترنت', 'error'));
+    }, 500);
+  }
+
+  function render(){
+    const wrap = document.getElementById('dishList');
+    wrap.innerHTML = '';
+    CAT_ORDER.forEach(catKey => {
+      const dishes = CATALOG.filter(d => d.cat === catKey);
+      if(!dishes.length) return;
+      const block = document.createElement('div');
+      block.className = 'cat-block';
+      const title = document.createElement('div');
+      title.className = 'cat-title';
+      title.textContent = CAT_LABELS[catKey] || catKey;
+      block.appendChild(title);
+      dishes.forEach(d => {
+        const ov = overrides[d.id] || {};
+        const currentPrice = ov.price !== undefined ? ov.price : d.price;
+        const soldOut = !!ov.soldOut;
+        const row = document.createElement('div');
+        row.className = 'dish-row' + (soldOut ? ' sold-out' : '');
+        row.innerHTML = `
+          <div class="dish-name">${d.name}</div>
+          <div class="price-wrap">
+            <input type="number" inputmode="decimal" value="${currentPrice}" data-price="${d.id}" aria-label="سعر ${d.name}">
+            <span class="orig">${ov.price !== undefined && ov.price !== d.price ? '(أصلي ' + d.price + ')' : ''}</span>
+          </div>
+          <button class="sold-toggle${soldOut ? ' active' : ''}" data-toggle="${d.id}">${soldOut ? 'غير متوفر' : 'متوفر'}</button>
+          ${ (ov.price !== undefined || ov.soldOut) ? `<button class="reset-btn" data-reset="${d.id}" aria-label="استعادة الأصلي">↺</button>` : '' }
+        `;
+        wrap.appendChild(row);
+      });
+      wrap.appendChild(block);
+    });
+
+    wrap.querySelectorAll('[data-price]').forEach(inp => {
+      inp.addEventListener('change', () => {
+        const id = inp.dataset.price;
+        const val = parseFloat(inp.value);
+        if(isNaN(val) || val < 0) return;
+        overrides[id] = overrides[id] || {};
+        overrides[id].price = val;
+        scheduleSave();
+      });
+    });
+    wrap.querySelectorAll('[data-toggle]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.toggle;
+        overrides[id] = overrides[id] || {};
+        overrides[id].soldOut = !overrides[id].soldOut;
+        scheduleSave();
+        render();
+      });
+    });
+    wrap.querySelectorAll('[data-reset]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.reset;
+        delete overrides[id];
+        scheduleSave();
+        render();
+      });
+    });
+  }
+
+  onSnapshot(overridesRef, (snap) => {
+    overrides = (snap.exists() && snap.data().items) ? snap.data().items : {};
+    render();
+  }, (err) => {
+    setStatus('⚠️ تعذّر الاتصال بقاعدة البيانات', 'error');
+    render();
+  });
+
+  render();
+
+  // ================= orders (read-only, for analytics) =================
+  const ordersRef = doc(db, 'diwaniya', 'liveOrders');
+  let allOrders = [];
+  let revenueRange = 'week';
+  let bsRange = 'week';
+
+  function rangeStartMs(range){
+    const now = new Date();
+    if(range === 'week'){
+      const d = new Date(now); d.setDate(d.getDate() - 7);
+      return d.getTime();
+    }
+    if(range === 'month'){
+      const d = new Date(now); d.setMonth(d.getMonth() - 1);
+      return d.getTime();
+    }
+    const d = new Date(now); d.setFullYear(d.getFullYear() - 1);
+    return d.getTime();
+  }
+
+  function ordersInRange(range){
+    const start = rangeStartMs(range);
+    return allOrders.filter(o => o.createdAt >= start && o.status === 'completed');
+  }
+  function ordersInPriorRange(range){
+    const start = rangeStartMs(range);
+    const span = Date.now() - start;
+    const priorStart = start - span;
+    return allOrders.filter(o => o.createdAt >= priorStart && o.createdAt < start && o.status === 'completed');
+  }
+
+  const DEMO_TYPE_COUNTS = {'dine-in':28, 'takeaway':20, 'delivery':14};
+  const DEMO_PEAK = [4, 22, 9, 25, 2];
+
+  function renderRevenue(){
+    const current = ordersInRange(revenueRange);
+    const isDemo = current.length === 0;
+    const demoBadge = document.getElementById('demoBadgeRevenue');
+
+    if(isDemo){
+      demoBadge.style.display = 'block';
+      document.getElementById('statRevenue').textContent = '4,850 ر.س';
+      document.getElementById('statOrders').textContent = '62';
+      document.getElementById('statAvg').textContent = '78 ر.س';
+      const compareEl = document.getElementById('statCompare');
+      compareEl.textContent = '▲ 12%';
+      compareEl.className = 'stat-value up';
+
+      const typeLabels = {'dine-in':'محلي', 'takeaway':'استلام', 'delivery':'توصيل'};
+      const maxType = Math.max(1, ...Object.values(DEMO_TYPE_COUNTS));
+      document.getElementById('typeBreakdown').innerHTML = Object.keys(typeLabels).map(k => `
+        <div class="bar-row">
+          <div class="label">${typeLabels[k]}</div>
+          <div class="track"><div class="fill" style="width:${(DEMO_TYPE_COUNTS[k]/maxType*100)}%"></div></div>
+          <div class="n">${DEMO_TYPE_COUNTS[k]}</div>
+        </div>`).join('');
+
+      const peakSlots = ['الفطور (6–11)','الغدا (11–16)','العصر (16–19)','العشا (19–24)','بعد منتصف الليل'];
+      const maxSlot = Math.max(1, ...DEMO_PEAK);
+      document.getElementById('peakHours').innerHTML = peakSlots.map((label,i) => `
+        <div class="bar-row">
+          <div class="label">${label}</div>
+          <div class="track"><div class="fill" style="width:${(DEMO_PEAK[i]/maxSlot*100)}%"></div></div>
+          <div class="n">${DEMO_PEAK[i]}</div>
+        </div>`).join('');
+
+      renderBranchCompare([
+        {label:'فرع النخيل', revenue:1650, orders:22},
+        {label:'فرع الخبر', revenue:1400, orders:18},
+        {label:'فرع الدمام', revenue:1100, orders:14},
+        {label:'فرع المبرز', revenue:600, orders:8},
+        {label:'فرع الشاطئ', revenue:400, orders:5},
+      ]);
+      const demoWeeksRev = [1200,1450,1100,1800,1600,2100];
+      const maxWRev = Math.max(...demoWeeksRev);
+      document.getElementById('salesTrend').innerHTML = `<div class="trend-bars">${demoWeeksRev.map((v,i) => `
+        <div class="trend-bar-col"><div class="val">${v}</div><div class="bar" style="height:${(v/maxWRev*100)}%"></div><div class="lbl">${i===5?'هالأسبوع':'قبل '+(5-i)+'أ'}</div></div>`).join('')}</div>`;
+      return;
+    }
+
+    demoBadge.style.display = 'none';
+    const prior = ordersInPriorRange(revenueRange);
+    const total = current.reduce((s,o) => s + (o.total||0), 0);
+    const priorTotal = prior.reduce((s,o) => s + (o.total||0), 0);
+    document.getElementById('statRevenue').textContent = total.toLocaleString('ar-SA') + ' ر.س';
+    document.getElementById('statOrders').textContent = current.length;
+    document.getElementById('statAvg').textContent = current.length ? Math.round(total/current.length) + ' ر.س' : '—';
+
+    const compareEl = document.getElementById('statCompare');
+    if(priorTotal > 0){
+      const diff = Math.round(((total - priorTotal) / priorTotal) * 100);
+      compareEl.textContent = (diff >= 0 ? '▲ ' : '▼ ') + Math.abs(diff) + '%';
+      compareEl.className = 'stat-value ' + (diff >= 0 ? 'up' : 'down');
+    } else {
+      compareEl.textContent = '—';
+      compareEl.className = 'stat-value';
+    }
+
+    const typeLabels = {'dine-in':'محلي', 'takeaway':'استلام', 'delivery':'توصيل'};
+    const typeCounts = {'dine-in':0, 'takeaway':0, 'delivery':0};
+    current.forEach(o => { if(typeCounts[o.type] !== undefined) typeCounts[o.type]++; });
+    const maxType = Math.max(1, ...Object.values(typeCounts));
+    document.getElementById('typeBreakdown').innerHTML = Object.keys(typeLabels).map(k => `
+      <div class="bar-row">
+        <div class="label">${typeLabels[k]}</div>
+        <div class="track"><div class="fill" style="width:${(typeCounts[k]/maxType*100)}%"></div></div>
+        <div class="n">${typeCounts[k]}</div>
+      </div>`).join('');
+
+    const hourCounts = new Array(24).fill(0);
+    current.forEach(o => { hourCounts[new Date(o.createdAt).getHours()]++; });
+    const peakSlots = [
+      {label:'الفطور (6–11)', range:[6,11]},
+      {label:'الغدا (11–16)', range:[11,16]},
+      {label:'العصر (16–19)', range:[16,19]},
+      {label:'العشا (19–24)', range:[19,24]},
+      {label:'بعد منتصف الليل', range:[0,6]},
+    ];
+    const slotCounts = peakSlots.map(s => hourCounts.slice(s.range[0], s.range[1]).reduce((a,b)=>a+b,0));
+    const maxSlot = Math.max(1, ...slotCounts);
+    document.getElementById('peakHours').innerHTML = peakSlots.map((s,i) => `
+      <div class="bar-row">
+        <div class="label">${s.label}</div>
+        <div class="track"><div class="fill" style="width:${(slotCounts[i]/maxSlot*100)}%"></div></div>
+        <div class="n">${slotCounts[i]}</div>
+      </div>`).join('');
+
+    const branchTotals = {};
+    current.forEach(o => {
+      const key = o.branchLabel || 'غير محدد';
+      branchTotals[key] = branchTotals[key] || {revenue:0, orders:0};
+      branchTotals[key].revenue += (o.total||0);
+      branchTotals[key].orders += 1;
+    });
+    const branchArr = Object.entries(branchTotals).map(([label, v]) => ({label, revenue:v.revenue, orders:v.orders}));
+    renderBranchCompare(branchArr);
+    renderSalesTrend(allOrders);
+  }
+
+  function renderBranchCompare(branches){
+    const wrap = document.getElementById('branchCompare');
+    if(!branches.length){
+      wrap.innerHTML = '<div class="note-box">ما فيه بيانات فروع كافية بهالفترة بعد</div>';
+      return;
+    }
+    const sorted = [...branches].sort((a,b) => b.revenue - a.revenue);
+    const maxRev = Math.max(1, ...sorted.map(b => b.revenue));
+    wrap.innerHTML = sorted.map((b,i) => {
+      const rankTag = i===0 ? '<span class="rank-tag top">🥇 الأقوى</span>' : (i===sorted.length-1 && sorted.length>1 ? '<span class="rank-tag low">الأضعف</span>' : '');
+      return `
+      <div class="branch-row">
+        <div class="top"><div class="name">${b.label}${rankTag}</div><div class="rev">${b.revenue.toLocaleString('ar-SA')} ر.س</div></div>
+        <div class="track"><div class="fill" style="width:${(b.revenue/maxRev*100)}%"></div></div>
+        <div class="sub">${b.orders} طلب</div>
+      </div>`;
+    }).join('');
+  }
+
+  const DEMO_TOP = ['كبسة دجاج','مندي لحم','لقيمات','قهوة عربية','سمبوسة لحم','عصير برتقال طازج','باقة عائلية متوسطة','مطبق لحم'];
+  const DEMO_TOP_QTY = [58,41,37,33,29,24,19,15];
+  const DEMO_LOW = ['سحلب','زنجبيل بالعسل','عصيدة','خبيص الرز','شعير بارد','سلطة الكرنب بالليمون','بليلة حارة','جبن قريش بالطماطم'];
+  const DEMO_LOW_QTY = [2,2,3,3,4,4,5,5];
+
+  function renderBestSellers(){
+    const current = ordersInRange(bsRange);
+    const isDemo = current.length === 0;
+    const demoBadge = document.getElementById('demoBadgeSellers');
+
+    if(isDemo){
+      demoBadge.style.display = 'block';
+      document.getElementById('topSellers').innerHTML = DEMO_TOP.map((name,i) => `
+        <div class="seller-row"><div class="rank">#${i+1}</div><div class="name">${name}</div><div class="qty">${DEMO_TOP_QTY[i]} طلبية</div></div>
+      `).join('');
+      document.getElementById('lowSellers').innerHTML = DEMO_LOW.map((name,i) => `
+        <div class="seller-row"><div class="rank">#${i+1}</div><div class="name">${name}</div><div class="qty">${DEMO_LOW_QTY[i]} طلبية</div></div>
+      `).join('');
+      return;
+    }
+
+    demoBadge.style.display = 'none';
+    const counts = {};
+    current.forEach(o => (o.items||[]).forEach(it => {
+      counts[it.name] = (counts[it.name]||0) + (it.qty||1);
+    }));
+    const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+    const top = sorted.slice(0, 8);
+    const low = sorted.slice(-8).reverse();
+    document.getElementById('topSellers').innerHTML = top.length ? top.map(([name,qty],i) => `
+      <div class="seller-row"><div class="rank">#${i+1}</div><div class="name">${name}</div><div class="qty">${qty} طلبية</div></div>
+    `).join('') : '<div class="note-box">ما فيه بيانات طلبات مكتملة بهالفترة بعد</div>';
+    document.getElementById('lowSellers').innerHTML = low.length ? low.map(([name,qty],i) => `
+      <div class="seller-row"><div class="rank">#${i+1}</div><div class="name">${name}</div><div class="qty">${qty} طلبية</div></div>
+    `).join('') : '<div class="note-box">ما فيه بيانات كافية بعد</div>';
+  }
+
+  // Exposed so the plain nav script (which is guaranteed to run even if this
+  // module script is still loading) can drive range changes.
+  window.setRevenueRange = function(range){ revenueRange = range; renderRevenue(); };
+  window.setBsRange = function(range){ bsRange = range; renderBestSellers(); };
+
+  function csvEscape(val){
+    const s = String(val ?? '');
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+
+  window.getRevenueExportRows = function(){
+    const current = ordersInRange(revenueRange);
+    const rows = [['رقم الطلب','التاريخ','الفرع','نوع الطلب','الإجمالي (ر.س)']];
+    current.forEach(o => {
+      rows.push([
+        o.number, new Date(o.createdAt).toLocaleString('ar-SA'),
+        o.branchLabel || 'غير محدد',
+        {'dine-in':'محلي','takeaway':'استلام','delivery':'توصيل'}[o.type] || o.type,
+        o.total || 0,
+      ]);
+    });
+    return rows;
+  };
+
+  window.getPayrollExportRows = function(){
+    const rows = [['الاسم','الوظيفة','الرتبة','الفرع','الراتب الأساسي','زيادات هذا الشهر','خصومات هذا الشهر','راتب هذا الشهر','الحالة']];
+    staffList.forEach(s => {
+      const deductThisMonth = (s.deductions||[]).filter(d => isCurrentMonth(d.at)).reduce((sum,d) => sum + (d.amount||0), 0);
+      const bonusThisMonth = (s.bonuses||[]).filter(b => isCurrentMonth(b.at)).reduce((sum,b) => sum + (b.amount||0), 0);
+      const currentMonthPay = (s.salary||0) + bonusThisMonth - deductThisMonth;
+      rows.push([
+        s.name, s.position||'—', s.rank||'—', s.branch||'—',
+        s.salary||0, bonusThisMonth, deductThisMonth, currentMonthPay,
+        s.active === false ? 'موقوف' : 'نشط',
+      ]);
+    });
+    return rows;
+  };
+
+  window.downloadCsv = function(rows, filename){
+    const csv = '\uFEFF' + rows.map(r => r.map(csvEscape).join(',')).join('\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  onSnapshot(ordersRef, (snap) => {
+    allOrders = (snap.exists() && snap.data().orders) ? snap.data().orders : [];
+    renderRevenue();
+    renderBestSellers();
+    renderInsights();
+  }, (err) => console.warn('orders sync error:', err));
+
+  // ================= insights: overdue orders, ratings, trend, loyal customers =================
+  function renderOverdueOrders(orders){
+    const wrap = document.getElementById('overdueOrders');
+    const OVERDUE_MS = 25 * 60 * 1000;
+    const now = Date.now();
+    const overdue = orders.filter(o => (o.status === 'new' || o.status === 'preparing') && (now - o.createdAt) >= OVERDUE_MS);
+    if(!overdue.length){
+      wrap.innerHTML = '<div class="note-box">✅ ما فيه طلبات متأخرة الحين — كل شي تحت السيطرة</div>';
+      return;
+    }
+    wrap.innerHTML = overdue.sort((a,b) => a.createdAt - b.createdAt).map(o => {
+      const mins = Math.round((now - o.createdAt) / 60000);
+      return `<div class="overdue-row">
+        <div class="ic">⏰</div>
+        <div class="info"><div class="t">طلب #${o.number} — ${o.branchLabel || 'غير محدد'}</div><div class="s">من ${mins} دقيقة، لسا ${o.status === 'new' ? 'ما بدأ' : 'قيد التحضير'}</div></div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderRatings(orders){
+    const rated = orders.filter(o => o.rating);
+    const avgEl = document.getElementById('statAvgRating');
+    const breakdownEl = document.getElementById('ratingBreakdown');
+    if(!rated.length){
+      avgEl.textContent = '—';
+      breakdownEl.innerHTML = '<div class="note-box">ما فيه تقييمات طلبات وصلت بعد</div>';
+    } else {
+      const avg = rated.reduce((sum,o) => sum + o.rating, 0) / rated.length;
+      avgEl.textContent = avg.toFixed(1) + ' ⭐';
+      const counts = {5:0,4:0,3:0,2:0,1:0};
+      rated.forEach(o => { if(counts[o.rating] !== undefined) counts[o.rating]++; });
+      const maxCount = Math.max(1, ...Object.values(counts));
+      breakdownEl.innerHTML = [5,4,3,2,1].map(n => `
+        <div class="rating-bar-row">
+          <div class="stars-lbl">${'⭐'.repeat(n)}</div>
+          <div class="track"><div class="fill" style="width:${(counts[n]/maxCount*100)}%"></div></div>
+          <div class="n">${counts[n]}</div>
+        </div>`).join('');
+    }
+  }
+
+  function renderUsabilityFeedback(entries){
+    const avgEl = document.getElementById('statAvgUsability');
+    const listEl = document.getElementById('usabilityNotesList');
+    if(!entries || !entries.length){
+      avgEl.textContent = '—';
+      listEl.innerHTML = '<div class="note-box">ما فيه ملاحظات سهولة استخدام وصلت بعد</div>';
+      return;
+    }
+    const avg = entries.reduce((sum,e) => sum + (e.stars||0), 0) / entries.length;
+    avgEl.textContent = avg.toFixed(1) + ' ⭐';
+    const withNotes = entries.filter(e => e.note && e.note.trim()).sort((a,b) => b.at - a.at);
+    listEl.innerHTML = withNotes.length ? withNotes.slice(0, 15).map(e => `
+      <div class="deduction-row">
+        <div><div class="reason">${'⭐'.repeat(e.stars)} — ${escapeHtml(e.note)}</div><div class="date">${fmtDate(e.at)}</div></div>
+      </div>`).join('') : '<div class="note-box">ما فيه ملاحظات مكتوبة بعد (بس تقييمات نجوم)</div>';
+  }
+
+  function renderSalesTrend(orders){
+    const wrap = document.getElementById('salesTrend');
+    const weeks = [];
+    for(let i=5; i>=0; i--){
+      const end = Date.now() - i*7*24*3600*1000;
+      const start = end - 7*24*3600*1000;
+      const weekOrders = orders.filter(o => o.status==='completed' && o.createdAt >= start && o.createdAt < end);
+      weeks.push({ label: i===0 ? 'هالأسبوع' : `قبل ${i}أ`, total: weekOrders.reduce((s,o)=>s+(o.total||0),0) });
+    }
+    const maxTotal = Math.max(1, ...weeks.map(w => w.total));
+    wrap.innerHTML = `<div class="trend-bars">${weeks.map(w => `
+      <div class="trend-bar-col">
+        <div class="val">${w.total ? w.total.toLocaleString('ar-SA') : ''}</div>
+        <div class="bar" style="height:${Math.max(3,(w.total/maxTotal*100))}%"></div>
+        <div class="lbl">${w.label}</div>
+      </div>`).join('')}</div>`;
+  }
+
+  function renderLoyalCustomers(orders){
+    const wrap = document.getElementById('loyalCustomers');
+    const byCustomer = {};
+    orders.filter(o => o.status==='completed' && o.customerPhone).forEach(o => {
+      const key = o.customerPhone;
+      byCustomer[key] = byCustomer[key] || {name: o.customerName || 'زبون', orders:0, spend:0};
+      byCustomer[key].orders += 1;
+      byCustomer[key].spend += (o.total||0);
+    });
+    const sorted = Object.values(byCustomer).sort((a,b) => b.orders - a.orders).slice(0, 8);
+    if(!sorted.length){
+      wrap.innerHTML = '<div class="note-box">ما فيه بيانات زبائن كافية بعد (يحتاج تسجيل دخول بالجوال وقت الطلب)</div>';
+      return;
+    }
+    wrap.innerHTML = sorted.map((c,i) => `
+      <div class="loyal-row">
+        <div class="rank">#${i+1}</div>
+        <div class="info"><div class="name">${escapeHtml(c.name)}</div><div class="n">${c.orders} طلب</div></div>
+        <div class="spend">${c.spend.toLocaleString('ar-SA')} ر.س</div>
+      </div>`).join('');
+  }
+
+  const DEMO_OVERDUE = [{number:118, branchLabel:'فرع النخيل', mins:34, status:'قيد التحضير'}];
+  const DEMO_USABILITY_NOTES = [
+    {stars:5, note:'المنيو سهل وواضح، أحسن من مطاعم كثيرة', at:Date.now()-2*24*3600*1000},
+    {stars:4, note:'زين بس ياليت الصور أوضح شوي', at:Date.now()-5*24*3600*1000},
+  ];
+  function renderInsights(){
+    const isDemo = allOrders.length === 0;
+    document.getElementById('demoBadgeInsights').style.display = isDemo ? 'block' : 'none';
+    if(isDemo){
+      document.getElementById('overdueOrders').innerHTML = DEMO_OVERDUE.map(o => `
+        <div class="overdue-row"><div class="ic">⏰</div>
+        <div class="info"><div class="t">طلب #${o.number} — ${o.branchLabel}</div><div class="s">من ${o.mins} دقيقة، لسا ${o.status}</div></div></div>`).join('');
+      document.getElementById('statAvgRating').textContent = '4.6 ⭐';
+      const demoCounts = {5:24,4:9,3:3,2:1,1:1};
+      const maxC = Math.max(...Object.values(demoCounts));
+      document.getElementById('ratingBreakdown').innerHTML = [5,4,3,2,1].map(n => `
+        <div class="rating-bar-row"><div class="stars-lbl">${'⭐'.repeat(n)}</div>
+        <div class="track"><div class="fill" style="width:${(demoCounts[n]/maxC*100)}%"></div></div>
+        <div class="n">${demoCounts[n]}</div></div>`).join('');
+      document.getElementById('statAvgUsability').textContent = '4.5 ⭐';
+      document.getElementById('usabilityNotesList').innerHTML = DEMO_USABILITY_NOTES.map(e => `
+        <div class="deduction-row"><div><div class="reason">${'⭐'.repeat(e.stars)} — ${e.note}</div><div class="date">${fmtDate(e.at)}</div></div></div>`).join('');
+      const demoLoyal = [{name:'سعود العتيبي', orders:14, spend:980},{name:'منى القحطاني', orders:9, spend:620},{name:'فهد الدوسري', orders:7, spend:510}];
+      document.getElementById('loyalCustomers').innerHTML = demoLoyal.map((c,i) => `
+        <div class="loyal-row"><div class="rank">#${i+1}</div>
+        <div class="info"><div class="name">${c.name}</div><div class="n">${c.orders} طلب</div></div>
+        <div class="spend">${c.spend} ر.س</div></div>`).join('');
+      return;
+    }
+    renderOverdueOrders(allOrders);
+    renderRatings(allOrders);
+    renderUsabilityFeedback(window.diwaniyaUsabilityFeedback || []);
+    renderLoyalCustomers(allOrders);
+  }
+  window.onUsabilityFeedbackUpdate = function(entries){
+    if(allOrders.length) renderUsabilityFeedback(entries);
+  };
+  setInterval(() => {
+    if(allOrders.length) renderOverdueOrders(allOrders);
+  }, 60000);
+
+  // ================= staff accounts =================
+  let staffList = [];
+  let staffSaveTimer = null;
+  let openStaffId = null;
+
+  function escapeHtml(str){
+    if(str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function setStaffStatus(text, cls){
+    const el = document.getElementById('staffSaveStatus');
+    el.textContent = text;
+    el.className = 'staff-save-status' + (cls ? ' ' + cls : '');
+  }
+
+  function saveStaff(){
+    setStaffStatus('جارِ الحفظ...', 'saving');
+    clearTimeout(staffSaveTimer);
+    staffSaveTimer = setTimeout(() => {
+      setDoc(staffAccountsRef, { list: staffList, updatedAt: Date.now() })
+        .then(() => setStaffStatus('✅ تم الحفظ — يشتغل بالشاشات فوراً', 'saved'))
+        .catch(() => setStaffStatus('⚠️ تعذّر الحفظ — تأكد من الإنترنت', 'error'));
+    }, 400);
+  }
+
+  function fmtDate(ts){
+    return new Date(ts).toLocaleDateString('ar-SA', {day:'2-digit', month:'2-digit', year:'numeric'});
+  }
+
+  function tenureText(hiredAt){
+    if(!hiredAt) return '—';
+    const dayMs = 24*3600*1000;
+    let days = Math.floor((Date.now() - hiredAt) / dayMs);
+    if(days < 0) days = 0;
+    const years = Math.floor(days / 365);
+    days -= years * 365;
+    const months = Math.floor(days / 30);
+    days -= months * 30;
+    const parts = [];
+    if(years > 0) parts.push(years + ' سنة');
+    if(months > 0) parts.push(months + ' شهر');
+    if(days > 0 || parts.length === 0) parts.push(days + ' يوم');
+    return parts.join(' و ');
+  }
+
+  let editStaffId = null;
+
+  function isCurrentMonth(ts){
+    const d = new Date(ts), now = new Date();
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }
+
+  function renderStaff(){
+    const wrap = document.getElementById('staffList');
+    if(!staffList.length){
+      wrap.innerHTML = '<div class="note-box">ما فيه موظفين مضافين بعد — الرمز الموحّد القديم يفضل يشتغل لحد ما تضيف موظف واحد على الأقل.</div>';
+      return;
+    }
+    wrap.innerHTML = staffList.map(s => {
+      const deductions = s.deductions || [];
+      const bonuses = s.bonuses || [];
+      const deductThisMonth = deductions.filter(d => isCurrentMonth(d.at)).reduce((sum,d) => sum + (d.amount||0), 0);
+      const bonusThisMonth = bonuses.filter(b => isCurrentMonth(b.at)).reduce((sum,b) => sum + (b.amount||0), 0);
+      const currentMonthPay = (s.salary||0) + bonusThisMonth - deductThisMonth;
+      const isOpen = s.id === openStaffId;
+      const isEditing = s.id === editStaffId;
+      const active = s.active !== false;
+      const branchOptions = (window.BRANCHES || []).map(b => `<option value="${b.name}" ${s.branch===b.name?'selected':''}>${b.name}</option>`).join('');
+      return `
+      <div class="staff-row" data-staff-card="${s.id}">
+        <div class="staff-row-top">
+          <div class="avatar">${(s.name||'?').trim().charAt(0)}</div>
+          <div class="info">
+            <div class="name">${escapeHtml(s.name)}${!active ? '<span class="inactive-tag">موقوف</span>' : ''}</div>
+            <div class="meta-line">${s.position ? escapeHtml(s.position) : 'بدون وظيفة محددة'}${s.rank ? ' · ' + escapeHtml(s.rank) : ''}</div>
+            <div class="meta-line">${s.branch || 'بدون فرع محدد'}</div>
+          </div>
+          <button class="del-btn" data-del-staff="${s.id}" aria-label="حذف ${escapeHtml(s.name)}">🗑️</button>
+        </div>
+        <div class="staff-details ${isOpen ? 'open' : ''}" id="details-${s.id}">
+          ${isEditing ? `
+          <div class="edit-form">
+            <label class="edit-lbl">الوظيفة</label>
+            <input type="text" id="editPosition-${s.id}" value="${escapeHtml(s.position||'')}" placeholder="الوظيفة">
+            <label class="edit-lbl">الرتبة</label>
+            <input type="text" id="editRank-${s.id}" value="${escapeHtml(s.rank||'')}" placeholder="الرتبة">
+            <label class="edit-lbl">الفرع</label>
+            <select id="editBranch-${s.id}"><option value="">اختر الفرع</option>${branchOptions}</select>
+            <label class="edit-lbl">الراتب الأساسي (الثابت)</label>
+            <input type="number" id="editSalary-${s.id}" value="${s.salary||0}" min="0" placeholder="الراتب">
+            <div class="edit-actions">
+              <button class="edit-save-btn" data-save-edit="${s.id}">💾 حفظ</button>
+              <button class="edit-cancel-btn" data-cancel-edit="${s.id}">إلغاء</button>
+            </div>
+          </div>
+          ` : `
+          <div class="detail-grid">
+            <div class="detail-item"><div class="lbl">الرمز الخاص</div><div class="val">${s.pin}</div></div>
+            <div class="detail-item"><div class="lbl">الراتب الأساسي (الثابت)</div><div class="val">${s.salary ? s.salary.toLocaleString('ar-SA') + ' ر.س' : '—'}</div></div>
+            <div class="detail-item highlight"><div class="lbl">راتب هذا الشهر</div><div class="val">${currentMonthPay.toLocaleString('ar-SA')} ر.س</div></div>
+            <div class="detail-item"><div class="lbl">مدة الخدمة</div><div class="val">${tenureText(s.hiredAt)}</div></div>
+          </div>
+          <button class="edit-btn" data-edit-staff="${s.id}">✏️ تعديل الوظيفة والراتب والفرع</button>
+          `}
+          <button class="active-toggle ${active ? 'is-active' : 'is-inactive'}" data-toggle-active="${s.id}">
+            ${active ? '✅ نشط الآن — اضغط لإيقافه مؤقتاً' : '⏸️ موقوف الآن — اضغط لتفعيله'}
+          </button>
+
+          <div class="deduction-title"><span>🎁 الزيادات (${bonusThisMonth ? '+' + bonusThisMonth.toLocaleString('ar-SA') + ' ر.س هالشهر' : 'ما فيه هالشهر'})</span></div>
+          ${bonuses.length ? bonuses.map((b,i) => `
+            <div class="deduction-row">
+              <div><div class="reason">${escapeHtml(b.reason)}</div><div class="date">${fmtDate(b.at)}</div></div>
+              <div class="amount bonus">+${b.amount} ر.س</div>
+              <button class="del-ded" data-del-bonus="${s.id}" data-bon-index="${i}" aria-label="حذف الزيادة">✕</button>
+            </div>`).join('') : '<div class="note-box">ما فيه زيادات مسجّلة</div>'}
+          <div class="deduction-add-form">
+            <input type="number" min="0" placeholder="المبلغ" id="bonAmount-${s.id}">
+            <input type="text" placeholder="السبب" id="bonReason-${s.id}">
+            <button class="deduction-add-btn bonus-btn" data-add-bonus="${s.id}">➕ زيادة</button>
+          </div>
+
+          <div class="deduction-title"><span>📉 الخصومات (${deductThisMonth ? '-' + deductThisMonth.toLocaleString('ar-SA') + ' ر.س هالشهر' : 'ما فيه هالشهر'})</span></div>
+          ${deductions.length ? deductions.map((d,i) => `
+            <div class="deduction-row">
+              <div><div class="reason">${escapeHtml(d.reason)}</div><div class="date">${fmtDate(d.at)}</div></div>
+              <div class="amount">-${d.amount} ر.س</div>
+              <button class="del-ded" data-del-deduction="${s.id}" data-ded-index="${i}" aria-label="حذف الخصم">✕</button>
+            </div>`).join('') : '<div class="note-box">ما فيه خصومات مسجّلة</div>'}
+          <div class="deduction-add-form">
+            <input type="number" min="0" placeholder="المبلغ" id="dedAmount-${s.id}">
+            <input type="text" placeholder="السبب" id="dedReason-${s.id}">
+            <button class="deduction-add-btn" data-add-deduction="${s.id}">➕ خصم</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    wrap.querySelectorAll('[data-staff-card]').forEach(card => {
+      card.querySelector('.staff-row-top').addEventListener('click', (e) => {
+        if(e.target.closest('.del-btn')) return;
+        const id = card.dataset.staffCard;
+        openStaffId = (openStaffId === id) ? null : id;
+        if(openStaffId !== id) editStaffId = null;
+        renderStaff();
+      });
+    });
+    wrap.querySelectorAll('[data-del-staff]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        staffList = staffList.filter(s => s.id !== btn.dataset.delStaff);
+        renderStaff();
+        saveStaff();
+      });
+    });
+    wrap.querySelectorAll('[data-edit-staff]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        editStaffId = btn.dataset.editStaff;
+        renderStaff();
+      });
+    });
+    wrap.querySelectorAll('[data-cancel-edit]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        editStaffId = null;
+        renderStaff();
+      });
+    });
+    wrap.querySelectorAll('[data-save-edit]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.saveEdit;
+        const s = staffList.find(s => s.id === id);
+        if(!s) return;
+        s.position = document.getElementById('editPosition-' + id).value.trim();
+        s.rank = document.getElementById('editRank-' + id).value.trim();
+        s.branch = document.getElementById('editBranch-' + id).value;
+        s.salary = parseFloat(document.getElementById('editSalary-' + id).value) || 0;
+        editStaffId = null;
+        renderStaff();
+        saveStaff();
+      });
+    });
+    wrap.querySelectorAll('[data-toggle-active]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const s = staffList.find(s => s.id === btn.dataset.toggleActive);
+        if(s){ s.active = s.active === false ? true : false; renderStaff(); saveStaff(); }
+      });
+    });
+    wrap.querySelectorAll('[data-add-deduction]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.addDeduction;
+        const amountInput = document.getElementById('dedAmount-' + id);
+        const reasonInput = document.getElementById('dedReason-' + id);
+        const amount = parseFloat(amountInput.value);
+        const reason = reasonInput.value.trim();
+        if(isNaN(amount) || amount <= 0 || !reason){ setStaffStatus('⚠️ اكتب مبلغ وسبب صحيحين للخصم', 'error'); return; }
+        const s = staffList.find(s => s.id === id);
+        if(s){
+          s.deductions = s.deductions || [];
+          s.deductions.push({ amount, reason, at: Date.now() });
+          renderStaff();
+          saveStaff();
+        }
+      });
+    });
+    wrap.querySelectorAll('[data-del-deduction]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const s = staffList.find(s => s.id === btn.dataset.delDeduction);
+        const idx = parseInt(btn.dataset.dedIndex, 10);
+        if(s && s.deductions){ s.deductions.splice(idx, 1); renderStaff(); saveStaff(); }
+      });
+    });
+    wrap.querySelectorAll('[data-add-bonus]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.addBonus;
+        const amountInput = document.getElementById('bonAmount-' + id);
+        const reasonInput = document.getElementById('bonReason-' + id);
+        const amount = parseFloat(amountInput.value);
+        const reason = reasonInput.value.trim();
+        if(isNaN(amount) || amount <= 0 || !reason){ setStaffStatus('⚠️ اكتب مبلغ وسبب صحيحين للزيادة', 'error'); return; }
+        const s = staffList.find(s => s.id === id);
+        if(s){
+          s.bonuses = s.bonuses || [];
+          s.bonuses.push({ amount, reason, at: Date.now() });
+          renderStaff();
+          saveStaff();
+        }
+      });
+    });
+    wrap.querySelectorAll('[data-del-bonus]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const s = staffList.find(s => s.id === btn.dataset.delBonus);
+        const idx = parseInt(btn.dataset.bonIndex, 10);
+        if(s && s.bonuses){ s.bonuses.splice(idx, 1); renderStaff(); saveStaff(); }
+      });
+    });
+  }
+
+  window.addStaffMember = function(name, pin, extra){
+    extra = extra || {};
+    if(!name){ return {ok:false, msg:'⚠️ اكتب اسم الموظف'}; }
+    if(!/^\d{4,6}$/.test(pin)){ return {ok:false, msg:'⚠️ الرمز لازم يكون 4-6 أرقام بس'}; }
+    if(staffList.some(s => s.pin === pin)){ return {ok:false, msg:'⚠️ هذا الرمز مستخدم من موظف ثاني'}; }
+    staffList.push({
+      id: 'staff-' + Date.now().toString(36),
+      name, pin,
+      position: extra.position || '',
+      rank: extra.rank || '',
+      branch: extra.branch || '',
+      salary: extra.salary || 0,
+      deductions: [],
+      bonuses: [],
+      hiredAt: Date.now(),
+      active: true,
+    });
+    renderStaff();
+    saveStaff();
+    return {ok:true};
+  };
+
+  onSnapshot(staffAccountsRef, (snap) => {
+    staffList = (snap.exists() && snap.data().list) ? snap.data().list : [];
+    renderStaff();
+  }, (err) => {
+    setStaffStatus('⚠️ تعذّر الاتصال بقاعدة البيانات', 'error');
+    renderStaff();
+  });
+</script>
+
+</body>
+</html>
