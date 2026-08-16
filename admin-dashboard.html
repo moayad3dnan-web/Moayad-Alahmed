@@ -6,6 +6,7 @@
 <title>لوحة تحكم المالك — ديفان الخليج</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root{
     --bg:#FBF3E6; --surface:#F7EAD4; --ink:#3B2A1E; --ink-soft:#8A7259;
@@ -160,6 +161,7 @@
   .discount-card .info{ flex:1; min-width:0; }
   .discount-card .code{ font-weight:800; font-size:15px; color:var(--accent-dark); letter-spacing:1px; }
   .discount-card .val{ font-size:13px; font-weight:700; color:var(--gold-strong); }
+  .discount-card .usage{ font-size:11px; color:var(--ink-soft); margin-top:3px; }
   .discount-card .del-btn{ padding:8px 10px; border-radius:10px; border:none; background:none; color:var(--urgent); font-size:15px; flex:none; }
   .note-box{ font-size:11.5px; color:var(--ink-soft); background:var(--gold-tint); border-radius:10px; padding:10px 12px; margin-top:10px; line-height:1.6; }
   .demo-badge{
@@ -174,12 +176,17 @@
     color:var(--gold-strong); font-weight:700; font-size:12.5px;
   }
   .report-btn:active{ background:var(--gold-tint); }
+  .daily-close-btn{
+    width:100%; padding:13px; border-radius:14px; border:none;
+    background:linear-gradient(90deg, var(--accent-dark), #8C3A3A); color:#fff;
+    font-weight:800; font-size:14px; margin-bottom:14px;
+  }
   .print-header{ display:none; }
   @media print{
     body{ background:#fff; color:#000; }
     .page-side, .tabs, .range-switch, .report-actions, .demo-badge, .note-box,
     #saveStatus, #staffSaveStatus, .staff-form, .del-btn, .active-toggle,
-    .deduction-add-form, .del-ded, .db-header, .edit-btn, .edit-form{ display:none !important; }
+    .deduction-add-form, .del-ded, .db-header, .edit-btn, .edit-form, .report-btn{ display:none !important; }
     .tab-panel{ display:none !important; }
     .tab-panel.active{ display:block !important; max-width:none; padding:0; }
     .print-header{ display:block; text-align:center; margin-bottom:20px; }
@@ -222,6 +229,17 @@
   .trend-bar-col .bar{ width:100%; background:linear-gradient(180deg, var(--gold), var(--gold-strong)); border-radius:6px 6px 0 0; min-height:3px; }
   .trend-bar-col .val{ font-size:10px; font-weight:700; margin-bottom:4px; color:var(--gold-strong); }
   .trend-bar-col .lbl{ font-size:10px; color:var(--ink-soft); margin-top:6px; }
+  .week-cmp-legend{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--ink-soft); margin-bottom:10px; }
+  .week-cmp-legend .dot{ width:10px; height:10px; border-radius:3px; display:inline-block; }
+  .week-cmp-legend .dot.this-week{ background:var(--gold); }
+  .week-cmp-legend .dot.last-week{ background:var(--ink-soft); margin-inline-start:10px; }
+  .week-cmp-row{ margin-bottom:10px; }
+  .week-cmp-label{ font-size:11.5px; font-weight:700; margin-bottom:3px; }
+  .week-cmp-bars{ display:flex; flex-direction:column; gap:3px; }
+  .week-cmp-bar{ height:9px; border-radius:5px; min-width:2px; }
+  .week-cmp-bar.this-week{ background:var(--gold); }
+  .week-cmp-bar.last-week{ background:var(--ink-soft); opacity:0.6; }
+  .week-cmp-vals{ font-size:10px; color:var(--ink-soft); margin-top:3px; }
   .loyal-row{
     display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--line);
     border-radius:12px; padding:10px 13px; margin-bottom:8px;
@@ -257,6 +275,26 @@
     background:var(--bg); border-radius:10px; padding:8px 10px; margin-bottom:6px; font-size:12px;
     display:flex; justify-content:space-between; align-items:center;
   }
+  .qr-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:12px; margin-top:14px; }
+  .qr-card{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px; text-align:center; }
+  .qr-card .qr-box{ display:flex; align-items:center; justify-content:center; margin-bottom:8px; }
+  .qr-card .tlabel{ font-weight:800; font-size:13px; }
+  @media (min-width: 720px){
+    .qr-grid{ grid-template-columns:repeat(auto-fill, minmax(160px,1fr)); }
+  }
+  @media print{
+    .qr-card{ break-inside:avoid; border:1px solid #ccc !important; }
+  }
+  .loyalty-box{
+    background:var(--gold-tint); border:1px solid var(--gold); border-radius:12px; padding:10px 12px; margin-bottom:10px;
+  }
+  .loyalty-points{ font-weight:800; font-size:13px; color:var(--gold-strong); margin-bottom:8px; }
+  .loyalty-award{ display:flex; gap:6px; }
+  .loyalty-award input{
+    flex:1; padding:8px 10px; border-radius:10px; border:1px solid var(--line); background:var(--bg);
+    font-size:12px; outline:none; font-family:'Cairo',sans-serif;
+  }
+  .loyalty-award-btn{ padding:8px 14px; border-radius:10px; border:none; background:var(--fresh); color:#fff; font-weight:700; font-size:12px; }
 
   /* ---------- staff management ---------- */
   .staff-form{ display:flex; flex-direction:column; gap:8px; margin-bottom:18px; }
@@ -302,6 +340,16 @@
   .edit-actions{ display:flex; gap:8px; margin-top:12px; }
   .edit-save-btn{ flex:1; padding:9px; border-radius:10px; border:none; background:var(--fresh); color:#fff; font-weight:700; font-size:12.5px; }
   .edit-cancel-btn{ flex:1; padding:9px; border-radius:10px; border:1px solid var(--line); background:none; color:var(--ink-soft); font-weight:700; font-size:12.5px; }
+  .shift-row{ display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+  .shift-day{ width:64px; font-size:12px; font-weight:700; flex:none; }
+  .shift-row input[type="time"]{
+    flex:1; padding:7px 8px; border-radius:8px; border:1px solid var(--line); background:var(--bg);
+    color:var(--ink); font-size:12px; outline:none; font-family:'Cairo',sans-serif;
+  }
+  .shift-sep{ font-size:11px; color:var(--ink-soft); flex:none; }
+  .shift-summary{ background:var(--bg); border-radius:10px; padding:8px 12px; margin-bottom:12px; }
+  .shift-summary-row{ display:flex; justify-content:space-between; font-size:12px; padding:3px 0; }
+  .shift-summary-row span:last-child{ color:var(--ink-soft); font-weight:700; }
   .staff-details{ display:none; margin-top:12px; padding-top:12px; border-top:1px dashed var(--line); }
   .staff-details.open{ display:block; }
   .staff-details .detail-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
@@ -350,8 +398,35 @@
 </div>
 <script>
 (function(){
-  var OWNER_PIN = '550012';
   var STORAGE_KEY = 'diwaniya-owner-pin-ok';
+  var PIN_CACHE_KEY = 'diwaniya-owner-pin-cache';
+  var OWNERS_CACHE_KEY = 'diwaniya-owners-cache';
+  var OWNER_NAME_KEY = 'diwaniya-owner-name';
+
+  function getCurrentOwnerPin(){
+    try{
+      var cached = localStorage.getItem(PIN_CACHE_KEY);
+      if(cached) return cached;
+    }catch(e){}
+    return '550012';
+  }
+  function getOwnersList(){
+    try{
+      var cached = localStorage.getItem(OWNERS_CACHE_KEY);
+      if(cached){
+        var list = JSON.parse(cached);
+        if(Array.isArray(list) && list.length) return list;
+      }
+    }catch(e){}
+    return [{ id:'default', name:'المالك', pin: getCurrentOwnerPin() }];
+  }
+  function findOwnerByPin(entered){
+    var list = getOwnersList();
+    for(var i=0; i<list.length; i++){
+      if(list[i].pin === entered) return list[i];
+    }
+    return null;
+  }
 
   function unlockNow(){
     document.body.classList.remove('pin-locked');
@@ -366,12 +441,16 @@
       var err = document.getElementById('pinError');
       var entered = (input && input.value ? input.value : '').replace(/[^0-9]/g, '');
       if(err){ err.style.display = 'block'; err.style.color = '#C0392B'; }
-      if(entered === OWNER_PIN){
-        try{ localStorage.setItem(STORAGE_KEY, '1'); }catch(e2){}
+      var matchedOwner = findOwnerByPin(entered);
+      if(matchedOwner){
+        try{
+          localStorage.setItem(STORAGE_KEY, '1');
+          localStorage.setItem(OWNER_NAME_KEY, matchedOwner.name);
+        }catch(e2){}
         if(err){ err.textContent = '✅ تطابق! جاري الفتح...'; err.style.color = '#3C8F4A'; }
         unlockNow();
       } else {
-        if(err) err.textContent = 'رمز غير صحيح — كتبت ' + entered.length + ' رقم (المطلوب ' + OWNER_PIN.length + ')';
+        if(err) err.textContent = 'رمز غير صحيح — كتبت ' + entered.length + ' رقم';
         if(input){ input.value = ''; input.focus(); }
         var dbg = document.getElementById('pinDebug');
         if(dbg) dbg.textContent = 'عدد الأرقام المكتوبة: 0';
@@ -409,7 +488,7 @@
 
 <div class="db-header">
   <h1>🎛️ Restaurant Manager</h1>
-  <div class="sub">مركز قيادة ديفان الخليج — كل شي بمكان وحد</div>
+  <div class="sub" id="restaurantNameDisplay">مركز قيادة ديفان الخليج — كل شي بمكان وحد</div>
 </div>
 
 <div class="tabs" id="mgrTabs">
@@ -419,10 +498,13 @@
   <button class="tab-btn" data-tab="staff">👥 الموظفين</button>
   <button class="tab-btn" data-tab="insights">📈 رؤى إضافية</button>
   <button class="tab-btn" data-tab="customers">🧑‍🤝‍🧑 الزبائن</button>
+  <button class="tab-btn" data-tab="tables">🪑 الطاولات</button>
+  <button class="tab-btn" data-tab="settings">⚙️ الإعدادات</button>
 </div>
 
 <div class="tab-panel active" id="panel-revenue">
   <div class="print-header"><h1>تقرير الإيرادات — ديفان الخليج</h1><div class="sub" id="printRevenueDate"></div></div>
+  <button class="daily-close-btn" id="dailyClosingBtn">📋 تقرير الإغلاق اليومي</button>
   <div class="demo-badge" id="demoBadgeRevenue" style="display:none;">📊 بيانات توضيحية — بتتحدث تلقائياً أول ما تبدأ طلبات حقيقية توصل</div>
   <div class="range-switch" id="rangeSwitch">
     <button class="range-btn active" data-range="week">هالأسبوع</button>
@@ -446,6 +528,9 @@
   <div id="branchCompare"></div>
   <div class="cat-title">📈 اتجاه المبيعات (آخر 6 فترات)</div>
   <div id="salesTrend"></div>
+  <div class="cat-title">📊 هذا الأسبوع مقابل اللي قبله</div>
+  <div class="week-cmp-legend"><span class="dot this-week"></span> هالأسبوع <span class="dot last-week"></span> الأسبوع اللي فات</div>
+  <div id="weekComparisonChart"></div>
   <div class="cat-title">أوقات الذروة</div>
   <div id="peakHours"></div>
 
@@ -520,6 +605,18 @@
   <div id="attendanceToday"></div>
   <div class="cat-title-sub">سجل الحضور الكامل (آخر 50)</div>
   <div id="attendanceLog"></div>
+
+  <div class="cat-title">📢 ملاحظة لكل الموظفين</div>
+  <div class="staff-form">
+    <input type="text" id="newStaffNotice" placeholder="اكتب ملاحظة تطلع لكل الموظفين (مثال: نفدت كبسة اللحم اليوم)" maxlength="200">
+    <button class="staff-add-btn" id="addStaffNoticeBtn">📢 نشر</button>
+  </div>
+  <div class="staff-save-status" id="noticeSaveStatus"></div>
+  <div id="staffNoticesList"></div>
+
+  <div class="cat-title">⚡ أداء الموظفين</div>
+  <div class="note-box">يحتسب من الطلبات اللي جهّزها كل موظف عن طريق شاشة المطبخ — متوسط وقت التحضير وعدد الطلبات</div>
+  <div id="staffPerformance"></div>
 </div>
 
 <div class="tab-panel" id="panel-insights">
@@ -539,11 +636,62 @@
 
   <div class="cat-title">👑 الزبائن الأكثر ولاءً</div>
   <div id="loyalCustomers"></div>
+
+  <div class="cat-title">❌ الطلبات الملغية</div>
+  <div id="cancelledOrders"></div>
 </div>
 
 <div class="tab-panel" id="panel-customers">
   <input type="text" id="customerSearch" class="search-input" placeholder="ابحث بالاسم أو رقم الجوال">
   <div id="customersList"></div>
+</div>
+
+<div class="tab-panel" id="panel-tables">
+  <div class="cat-title">إعداد أكواد الطاولات</div>
+  <div class="staff-form">
+    <input type="text" id="qrBaseUrl" placeholder="رابط المنيو (مثال: https://yoursite.github.io/repo/index.html)">
+    <input type="number" id="qrFromTable" min="1" placeholder="من طاولة رقم" value="1">
+    <input type="number" id="qrToTable" min="1" placeholder="إلى طاولة رقم" value="12">
+    <button class="staff-add-btn" id="qrGenerateBtn">🔳 توليد الأكواد</button>
+  </div>
+  <button class="report-btn" id="qrPrintBtn" style="display:none; width:100%; margin-top:10px;">🖨️ طباعة كل الأكواد</button>
+  <div class="qr-grid" id="qrGrid"></div>
+  <div class="note-box" id="qrEmptyNote">عبّي رابط المنيو وحدد أرقام الطاولات، وبتطلع الأكواد جاهزة للطباعة.</div>
+</div>
+
+<div class="tab-panel" id="panel-settings">
+  <div class="cat-title">🏪 اسم المطعم</div>
+  <div class="note-box">هذا الاسم يبين بعنوان لوحة التحكم — لو تبيه ينعكس على شاشات ثانية (منيو، تطبيق) قولّي وأربطها.</div>
+  <div class="staff-form">
+    <input type="text" id="restaurantNameInput" placeholder="اسم المطعم" maxlength="60">
+    <button class="staff-add-btn" id="saveRestaurantNameBtn">💾 حفظ الاسم</button>
+  </div>
+  <div class="staff-save-status" id="restaurantNameStatus"></div>
+
+  <div class="cat-title">👥 حسابات الملاك</div>
+  <div class="note-box">أضف حساب لكل شريك/مالك برمز مستقل — كل واحد يدخل برمزه الخاص، ولازم يبقى مالك واحد على الأقل.</div>
+  <div class="staff-form">
+    <input type="text" id="newOwnerName" placeholder="اسم المالك الجديد" maxlength="40">
+    <input type="password" id="newOwnerPin" inputmode="numeric" placeholder="رمزه الخاص (4-10 أرقام)" maxlength="10">
+    <button class="staff-add-btn" id="addOwnerBtn">➕ إضافة مالك</button>
+  </div>
+  <div class="staff-save-status" id="ownersStatus"></div>
+  <div id="ownersList"></div>
+
+  <div class="cat-title">🔑 تغيير رمز الدخول الأساسي</div>
+  <div class="staff-form">
+    <input type="password" id="currentPinInput" inputmode="numeric" placeholder="الرمز الحالي" maxlength="10">
+    <input type="password" id="newPinInput" inputmode="numeric" placeholder="الرمز الجديد (4-10 أرقام)" maxlength="10">
+    <input type="password" id="confirmPinInput" inputmode="numeric" placeholder="تأكيد الرمز الجديد" maxlength="10">
+    <button class="staff-add-btn" id="changePinBtn">🔑 تغيير الرمز</button>
+  </div>
+  <div class="staff-save-status" id="pinChangeStatus"></div>
+  <div class="note-box">⚠️ احفظ أي رمز جديد بمكان آمن — لو انفقد كل الرموز، تحتاج تتواصل معي عشان نرجّعه من الكود مباشرة.</div>
+
+  <div class="cat-title">💾 نسخة احتياطية كاملة</div>
+  <div class="note-box">يحمّل ملف واحد فيه كل بيانات المطعم (الطلبات، الموظفين، الأسعار، الزبائن، كل شي) — احتفظ فيه بمكان آمن كل فترة.</div>
+  <button class="report-btn" id="backupBtn" style="width:100%;">⬇️ تحميل نسخة احتياطية الآن</button>
+  <div class="staff-save-status" id="backupStatus"></div>
 </div>
 
 
@@ -629,11 +777,167 @@
       }
     });
 
+    document.getElementById('addStaffNoticeBtn').addEventListener('click', () => {
+      const noticeInput = document.getElementById('newStaffNotice');
+      const statusEl = document.getElementById('noticeSaveStatus');
+      if(!window.publishStaffNotice){
+        statusEl.textContent = '⏳ جارِ الاتصال بالخادم، حاول بعد ثوانٍ...';
+        statusEl.className = 'staff-save-status error';
+        return;
+      }
+      statusEl.textContent = 'جارِ النشر...';
+      statusEl.className = 'staff-save-status saving';
+      window.publishStaffNotice(noticeInput.value).then((result) => {
+        if(result.ok){
+          noticeInput.value = '';
+          statusEl.textContent = '✅ تم النشر — يوصل للموظفين فوراً';
+          statusEl.className = 'staff-save-status saved';
+        } else {
+          statusEl.textContent = result.msg;
+          statusEl.className = 'staff-save-status error';
+        }
+      });
+    });
+
+    const QR_PREF_KEY = 'diwaniya-qr-baseurl';
+    try{ const savedBase = localStorage.getItem(QR_PREF_KEY); if(savedBase) document.getElementById('qrBaseUrl').value = savedBase; }catch(e){}
+    document.getElementById('qrGenerateBtn').addEventListener('click', () => {
+      const base = document.getElementById('qrBaseUrl').value.trim();
+      const from = parseInt(document.getElementById('qrFromTable').value, 10) || 1;
+      const to = parseInt(document.getElementById('qrToTable').value, 10) || from;
+      if(!base){ alert('⚠️ أدخل رابط المنيو أولاً'); return; }
+      try{ localStorage.setItem(QR_PREF_KEY, base); }catch(e){}
+      const grid = document.getElementById('qrGrid');
+      grid.innerHTML = '';
+      document.getElementById('qrEmptyNote').style.display = 'none';
+      document.getElementById('qrPrintBtn').style.display = (to >= from) ? 'block' : 'none';
+      const sep = base.includes('?') ? '&' : '?';
+      for(let n = from; n <= to; n++){
+        const url = `${base}${sep}table=${n}`;
+        const card = document.createElement('div');
+        card.className = 'qr-card';
+        card.innerHTML = `<div class="qr-box" id="qr-${n}"></div><div class="tlabel">🍽️ طاولة ${n}</div>`;
+        grid.appendChild(card);
+        new QRCode(document.getElementById('qr-'+n), {
+          text: url, width:120, height:120,
+          colorDark:'#3B2A1E', colorLight:'#ffffff',
+          correctLevel: QRCode.CorrectLevel.M,
+        });
+      }
+    });
+    document.getElementById('qrPrintBtn').addEventListener('click', () => window.print());
+
+    document.getElementById('saveRestaurantNameBtn').addEventListener('click', () => {
+      const input = document.getElementById('restaurantNameInput');
+      const statusEl = document.getElementById('restaurantNameStatus');
+      const name = input.value.trim();
+      if(!name){ statusEl.textContent = '⚠️ اكتب اسم المطعم'; statusEl.className = 'staff-save-status error'; return; }
+      if(!window.saveRestaurantName){
+        statusEl.textContent = '⏳ جارِ الاتصال بالخادم، حاول بعد ثوانٍ...';
+        statusEl.className = 'staff-save-status error';
+        return;
+      }
+      statusEl.textContent = 'جارِ الحفظ...';
+      statusEl.className = 'staff-save-status saving';
+      window.saveRestaurantName(name).then((ok) => {
+        statusEl.textContent = ok ? '✅ تم الحفظ' : '⚠️ تعذّر الحفظ — تأكد من الإنترنت';
+        statusEl.className = 'staff-save-status ' + (ok ? 'saved' : 'error');
+      });
+    });
+
+    document.getElementById('addOwnerBtn').addEventListener('click', () => {
+      const nameInput = document.getElementById('newOwnerName');
+      const pinInput = document.getElementById('newOwnerPin');
+      const statusEl = document.getElementById('ownersStatus');
+      const name = nameInput.value.trim();
+      const pin = pinInput.value.trim();
+      if(!name){ statusEl.textContent = '⚠️ اكتب اسم المالك'; statusEl.className = 'staff-save-status error'; return; }
+      if(!/^[0-9]{4,10}$/.test(pin)){
+        statusEl.textContent = '⚠️ الرمز لازم يكون أرقام بس، بين 4 و10 أرقام';
+        statusEl.className = 'staff-save-status error';
+        return;
+      }
+      if(!window.addOwnerAccount){
+        statusEl.textContent = '⏳ جارِ الاتصال بالخادم، حاول بعد ثوانٍ...';
+        statusEl.className = 'staff-save-status error';
+        return;
+      }
+      statusEl.textContent = 'جارِ الإضافة...';
+      statusEl.className = 'staff-save-status saving';
+      window.addOwnerAccount(name, pin).then((result) => {
+        if(result.ok){
+          nameInput.value = ''; pinInput.value = '';
+          statusEl.textContent = '✅ تمت الإضافة';
+          statusEl.className = 'staff-save-status saved';
+        } else {
+          statusEl.textContent = result.msg;
+          statusEl.className = 'staff-save-status error';
+        }
+      });
+    });
+
+    document.getElementById('changePinBtn').addEventListener('click', () => {
+      const curInput = document.getElementById('currentPinInput');
+      const newInput = document.getElementById('newPinInput');
+      const confirmInput = document.getElementById('confirmPinInput');
+      const statusEl = document.getElementById('pinChangeStatus');
+      const cur = curInput.value.trim();
+      const nw = newInput.value.trim();
+      const confirm = confirmInput.value.trim();
+      statusEl.className = 'staff-save-status';
+      if(!/^[0-9]{4,10}$/.test(nw)){
+        statusEl.textContent = '⚠️ الرمز الجديد لازم يكون أرقام بس، بين 4 و10 أرقام';
+        statusEl.className = 'staff-save-status error';
+        return;
+      }
+      if(nw !== confirm){
+        statusEl.textContent = '⚠️ الرمز الجديد وتأكيده مو متطابقين';
+        statusEl.className = 'staff-save-status error';
+        return;
+      }
+      if(!window.changeOwnerPin){
+        statusEl.textContent = '⏳ جارِ الاتصال بالخادم، حاول بعد ثوانٍ...';
+        statusEl.className = 'staff-save-status error';
+        return;
+      }
+      statusEl.textContent = 'جارِ التغيير...';
+      statusEl.className = 'staff-save-status saving';
+      window.changeOwnerPin(cur, nw).then((result) => {
+        if(result.ok){
+          curInput.value = ''; newInput.value = ''; confirmInput.value = '';
+          statusEl.textContent = '✅ تم تغيير الرمز — استخدمه بالمرة الجاية';
+          statusEl.className = 'staff-save-status saved';
+        } else {
+          statusEl.textContent = result.msg;
+          statusEl.className = 'staff-save-status error';
+        }
+      });
+    });
+
+    document.getElementById('backupBtn').addEventListener('click', () => {
+      const statusEl = document.getElementById('backupStatus');
+      if(!window.downloadFullBackup){
+        statusEl.textContent = '⏳ جارِ الاتصال بالخادم، حاول بعد ثوانٍ...';
+        statusEl.className = 'staff-save-status error';
+        return;
+      }
+      statusEl.textContent = 'جارِ التحضير...';
+      statusEl.className = 'staff-save-status saving';
+      window.downloadFullBackup().then((ok) => {
+        statusEl.textContent = ok ? '✅ جاهزة — افتح ملف التحميل' : '⚠️ تعذّر التحضير — تأكد من الإنترنت';
+        statusEl.className = 'staff-save-status ' + (ok ? 'saved' : 'error');
+      });
+    });
+
     const todayAr = new Date().toLocaleDateString('ar-SA', {day:'2-digit', month:'2-digit', year:'numeric'});
 
     document.getElementById('printRevenueBtn').addEventListener('click', () => {
       if(!window.getRevenueExportRows){ alert('⏳ جارِ الاتصال بالخادم، حاول بعد ثوانٍ...'); return; }
       window.openPrintableReport('تقرير الإيرادات — ديفان الخليج', window.getRevenueExportRows());
+    });
+    document.getElementById('dailyClosingBtn').addEventListener('click', () => {
+      if(!window.openDailyClosingReport){ alert('⏳ جارِ الاتصال بالخادم، حاول بعد ثوانٍ...'); return; }
+      window.openDailyClosingReport();
     });
     document.getElementById('exportRevenueBtn').addEventListener('click', () => {
       if(!window.getRevenueExportRows){ alert('⏳ جارِ الاتصال بالخادم، حاول بعد ثوانٍ...'); return; }
@@ -661,7 +965,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyASZzpHN3naZ3UxlRGS-VaDiNZV4-upmzA",
@@ -680,6 +984,8 @@
   const branchesListRef = doc(db, 'diwaniya', 'branchesList');
   const discountCodesRef = doc(db, 'diwaniya', 'discountCodes');
   const attendanceRef = doc(db, 'diwaniya', 'attendance');
+  const ownerSettingsRef = doc(db, 'diwaniya', 'ownerSettings');
+  const staffNoticesRef = doc(db, 'diwaniya', 'staffNotices');
 
   const CATALOG = [{"id": "m1", "name": "كبسة دجاج", "price": 42, "cat": "main"}, {"id": "m6", "name": "كبسة لحم", "price": 48, "cat": "main"}, {"id": "m2", "name": "مندي لحم", "price": 58, "cat": "main"}, {"id": "m7", "name": "مندي دجاج", "price": 46, "cat": "main"}, {"id": "m3", "name": "زبيدي مشوي", "price": 52, "cat": "main"}, {"id": "m8", "name": "روبيان مشوي بالثومية", "price": 65, "cat": "main"}, {"id": "m5", "name": "برياني لحم خليجي", "price": 46, "cat": "main"}, {"id": "m9", "name": "قوزي لحم", "price": 72, "cat": "main"}, {"id": "m10", "name": "هريس دجاج", "price": 38, "cat": "main"}, {"id": "bd1", "name": "باقة السهرة الثنائية", "price": 95, "cat": "bundles"}, {"id": "bd2", "name": "باقة عائلية صغيرة", "price": 145, "cat": "bundles"}, {"id": "bd3", "name": "باقة عائلية متوسطة", "price": 260, "cat": "bundles"}, {"id": "bd4", "name": "باقة عائلية كبيرة", "price": 420, "cat": "bundles"}, {"id": "bd5", "name": "باقة الديوانية الملكية", "price": 650, "cat": "bundles"}, {"id": "bd6", "name": "باقة الإفطار العائلي", "price": 180, "cat": "bundles"}, {"id": "h1", "name": "سمبوسة لحم", "price": 18, "cat": "hotApp"}, {"id": "h2", "name": "سمبوسة جبن", "price": 17, "cat": "hotApp"}, {"id": "h9", "name": "سمبوسة دجاج", "price": 18, "cat": "hotApp"}, {"id": "h3", "name": "مطبق لحم", "price": 24, "cat": "hotApp"}, {"id": "h10", "name": "مطبق جبن", "price": 22, "cat": "hotApp"}, {"id": "h4", "name": "روبيان مقرمش بصوص الليمون", "price": 28, "cat": "hotApp"}, {"id": "h5", "name": "باجلة بالدهن", "price": 16, "cat": "hotApp"}, {"id": "h6", "name": "بليلة حارة", "price": 15, "cat": "hotApp"}, {"id": "h7", "name": "خبز رقاق بالجبن", "price": 19, "cat": "hotApp"}, {"id": "h8", "name": "كبدة مشوية بالكمون", "price": 23, "cat": "hotApp"}, {"id": "c5", "name": "لبنة بزيت الزيتون", "price": 17, "cat": "coldApp"}, {"id": "c7", "name": "متبلة زبادي بالنعناع", "price": 15, "cat": "coldApp"}, {"id": "c9", "name": "بيض مسلوق بالكمون", "price": 12, "cat": "coldApp"}, {"id": "c10", "name": "جبنة عربية بزيت الزيتون", "price": 16, "cat": "coldApp"}, {"id": "c11", "name": "متبل باذنجان مشوي", "price": 17, "cat": "coldApp"}, {"id": "c12", "name": "حمص بزيت الزيتون والصنوبر", "price": 16, "cat": "coldApp"}, {"id": "c13", "name": "زيتون متبل", "price": 11, "cat": "coldApp"}, {"id": "c14", "name": "حلوم بارد بالزعتر", "price": 19, "cat": "coldApp"}, {"id": "c15", "name": "فتة حمص باللبن", "price": 18, "cat": "coldApp"}, {"id": "c16", "name": "جبن قريش بالطماطم", "price": 15, "cat": "coldApp"}, {"id": "c1", "name": "زبادي بالخيار", "price": 15, "cat": "salads"}, {"id": "c2", "name": "سلطة خليجية بالطحينة", "price": 18, "cat": "salads"}, {"id": "c3", "name": "سلطة دقوس", "price": 16, "cat": "salads"}, {"id": "c4", "name": "سلطة جرجير بالرمان", "price": 20, "cat": "salads"}, {"id": "c6", "name": "سلطة الطماطم والخيار", "price": 14, "cat": "salads"}, {"id": "c8", "name": "سلطة الفجل والجزر", "price": 14, "cat": "salads"}, {"id": "s7", "name": "سلطة خضراء بزيت الزيتون", "price": 15, "cat": "salads"}, {"id": "s8", "name": "سلطة الكرنب بالليمون", "price": 13, "cat": "salads"}, {"id": "s9", "name": "سلطة الذرة والفلفل الحلو", "price": 15, "cat": "salads"}, {"id": "s10", "name": "سلطة الخس بصوص الطحينة", "price": 14, "cat": "salads"}, {"id": "cd1", "name": "عصير برتقال طازج", "price": 14, "cat": "coldDrinks"}, {"id": "cd2", "name": "ليموناضة بالنعناع", "price": 15, "cat": "coldDrinks"}, {"id": "cd3", "name": "لبن بارد", "price": 12, "cat": "coldDrinks"}, {"id": "cd5", "name": "شاي مثلج", "price": 13, "cat": "coldDrinks"}, {"id": "cd6", "name": "عصير تمر هندي", "price": 14, "cat": "coldDrinks"}, {"id": "cd7", "name": "عصير رمان", "price": 16, "cat": "coldDrinks"}, {"id": "cd8", "name": "سوبيا", "price": 13, "cat": "coldDrinks"}, {"id": "cd9", "name": "عصير مانجو", "price": 15, "cat": "coldDrinks"}, {"id": "cd10", "name": "شعير بارد", "price": 12, "cat": "coldDrinks"}, {"id": "hd1", "name": "قهوة عربية", "price": 12, "cat": "hotDrinks"}, {"id": "hd2", "name": "شاي كرك", "price": 10, "cat": "hotDrinks"}, {"id": "hd3", "name": "شاي أحمر", "price": 9, "cat": "hotDrinks"}, {"id": "hd4", "name": "شاي بالهيل", "price": 11, "cat": "hotDrinks"}, {"id": "hd5", "name": "حليب بالزعفران", "price": 16, "cat": "hotDrinks"}, {"id": "hd6", "name": "قهوة تركية", "price": 13, "cat": "hotDrinks"}, {"id": "hd7", "name": "شاي بالنعناع", "price": 9, "cat": "hotDrinks"}, {"id": "hd8", "name": "سحلب", "price": 15, "cat": "hotDrinks"}, {"id": "hd9", "name": "قهوة بالزعفران", "price": 14, "cat": "hotDrinks"}, {"id": "hd10", "name": "زنجبيل بالعسل", "price": 11, "cat": "hotDrinks"}, {"id": "d1", "name": "لقيمات", "price": 20, "cat": "dessert"}, {"id": "d2", "name": "خبيصة", "price": 19, "cat": "dessert"}, {"id": "d3", "name": "بثيث", "price": 18, "cat": "dessert"}, {"id": "d4", "name": "مهلبية بالزعفران", "price": 17, "cat": "dessert"}, {"id": "d5", "name": "معصوب", "price": 21, "cat": "dessert"}, {"id": "d6", "name": "عصيدة", "price": 17, "cat": "dessert"}, {"id": "d7", "name": "سمبوسة حلا بالقشطة", "price": 18, "cat": "dessert"}, {"id": "d8", "name": "خبيص الرز", "price": 16, "cat": "dessert"}, {"id": "d9", "name": "زلابيا", "price": 17, "cat": "dessert"}, {"id": "d10", "name": "كليجا", "price": 19, "cat": "dessert"}];
   const CAT_LABELS = {"bundles": "👨‍👩‍👧‍👦 باقات العائلة", "main": "🍛 الأطباق الرئيسية", "hotApp": "🔥 مقبلات ساخنة", "coldApp": "🥗 مقبلات باردة", "salads": "🥬 سلطات", "coldDrinks": "🧊 مشروبات باردة", "hotDrinks": "☕ مشروبات ساخنة", "dessert": "🍰 حلويات"};
@@ -854,6 +1160,19 @@
       const maxWRev = Math.max(...demoWeeksRev);
       document.getElementById('salesTrend').innerHTML = `<div class="trend-bars">${demoWeeksRev.map((v,i) => `
         <div class="trend-bar-col"><div class="val">${v}</div><div class="bar" style="height:${(v/maxWRev*100)}%"></div><div class="lbl">${i===5?'هالأسبوع':'قبل '+(5-i)+'أ'}</div></div>`).join('')}</div>`;
+      const dayLabelsDemo = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+      const demoThisWeek = [280,320,250,410,380,520,300];
+      const demoLastWeek = [250,300,270,350,400,450,280];
+      const maxDemoVal = Math.max(...demoThisWeek, ...demoLastWeek);
+      document.getElementById('weekComparisonChart').innerHTML = dayLabelsDemo.map((label,i) => `
+        <div class="week-cmp-row">
+          <div class="week-cmp-label">${label}</div>
+          <div class="week-cmp-bars">
+            <div class="week-cmp-bar this-week" style="width:${(demoThisWeek[i]/maxDemoVal*100)}%"></div>
+            <div class="week-cmp-bar last-week" style="width:${(demoLastWeek[i]/maxDemoVal*100)}%"></div>
+          </div>
+          <div class="week-cmp-vals">${demoThisWeek[i]} ر.س مقابل ${demoLastWeek[i]} ر.س</div>
+        </div>`).join('');
       return;
     }
 
@@ -914,6 +1233,7 @@
     const branchArr = Object.entries(branchTotals).map(([label, v]) => ({label, revenue:v.revenue, orders:v.orders}));
     renderBranchCompare(branchArr);
     renderSalesTrend(allOrders);
+    renderWeekComparison(allOrders);
   }
 
   function renderBranchCompare(branches){
@@ -1051,12 +1371,93 @@
     setTimeout(() => URL.revokeObjectURL(url), 60000);
   };
 
+  window.openDailyClosingReport = function(){
+    const todayAr3 = new Date().toLocaleDateString('ar-SA', {day:'2-digit', month:'2-digit', year:'numeric', weekday:'long'});
+    const todaysCompleted = allOrders.filter(o => o.status === 'completed' && isToday(o.createdAt));
+    const revenue = todaysCompleted.reduce((s,o) => s + (o.total||0), 0);
+    const orderCount = todaysCompleted.length;
+    const avg = orderCount ? Math.round(revenue/orderCount) : 0;
+
+    const typeLabels2 = {'dine-in':'محلي', 'takeaway':'استلام', 'delivery':'توصيل'};
+    const typeCounts2 = {'dine-in':0, 'takeaway':0, 'delivery':0};
+    todaysCompleted.forEach(o => { if(typeCounts2[o.type] !== undefined) typeCounts2[o.type]++; });
+
+    const itemCounts = {};
+    todaysCompleted.forEach(o => (o.items||[]).forEach(it => { itemCounts[it.name] = (itemCounts[it.name]||0) + (it.qty||1); }));
+    const topItems = Object.entries(itemCounts).sort((a,b) => b[1]-a[1]).slice(0, 5);
+
+    const todaysAttendance = allAttendanceRecords.filter(r => isToday(r.at));
+    const firstIn = {};
+    todaysAttendance.forEach(r => { if(!firstIn[r.staffName] || r.at < firstIn[r.staffName]) firstIn[r.staffName] = r.at; });
+    const staffToday = Object.keys(firstIn);
+
+    const overdueToday = allOrders.filter(o => (o.status==='new'||o.status==='preparing') && isToday(o.createdAt)).length;
+
+    const html = `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8">
+      <title>تقرير الإغلاق اليومي — ديفان الخليج</title>
+      <style>
+        body{ font-family: Arial, sans-serif; padding:24px; direction:rtl; color:#222; }
+        h1{ text-align:center; font-size:24px; margin-bottom:4px; }
+        .d{ text-align:center; color:#666; font-size:14px; margin-bottom:24px; }
+        .section{ margin-bottom:22px; }
+        .section h2{ font-size:16px; border-bottom:2px solid #C8962A; padding-bottom:6px; margin-bottom:10px; }
+        .stats{ display:flex; gap:10px; flex-wrap:wrap; }
+        .stat{ flex:1; min-width:120px; border:1px solid #ddd; border-radius:10px; padding:12px; text-align:center; }
+        .stat .v{ font-size:20px; font-weight:800; color:#6E2A2A; }
+        .stat .l{ font-size:12px; color:#666; margin-top:4px; }
+        ul{ margin:0; padding-inline-start:20px; }
+        li{ padding:4px 0; font-size:14px; }
+        .warn{ color:#C0392B; font-weight:700; }
+      </style>
+      </head><body>
+      <h1>📋 تقرير الإغلاق اليومي</h1>
+      <div class="d">ديفان الخليج — ${todayAr3}</div>
+
+      <div class="section">
+        <h2>💰 المبيعات</h2>
+        <div class="stats">
+          <div class="stat"><div class="v">${revenue.toLocaleString('ar-SA')} ر.س</div><div class="l">إجمالي الإيرادات</div></div>
+          <div class="stat"><div class="v">${orderCount}</div><div class="l">عدد الطلبات المكتملة</div></div>
+          <div class="stat"><div class="v">${avg} ر.س</div><div class="l">متوسط الطلب</div></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>📦 نوع الطلبات</h2>
+        <ul>
+          <li>محلي: ${typeCounts2['dine-in']}</li>
+          <li>استلام: ${typeCounts2['takeaway']}</li>
+          <li>توصيل: ${typeCounts2['delivery']}</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h2>🔥 الأكثر مبيعاً اليوم</h2>
+        <ul>${topItems.length ? topItems.map(([n,q]) => `<li>${n} — ${q} طلبية</li>`).join('') : '<li>ما فيه بيانات كافية</li>'}</ul>
+      </div>
+
+      <div class="section">
+        <h2>👥 الموظفين الحاضرين اليوم</h2>
+        <ul>${staffToday.length ? staffToday.map(n => `<li>${n}</li>`).join('') : '<li>ما فيه أحد سجّل حضور اليوم</li>'}</ul>
+      </div>
+
+      ${overdueToday > 0 ? `<div class="section"><h2 class="warn">⏰ تنبيه</h2><div class="warn">فيه ${overdueToday} طلب لسا ما اكتمل من اليوم — راجعها قبل الإغلاق</div></div>` : ''}
+
+      </body></html>`;
+    const blob = new Blob([html], {type:'text/html;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  };
+
   onSnapshot(ordersRef, (snap) => {
     allOrders = (snap.exists() && snap.data().orders) ? snap.data().orders : [];
     renderRevenue();
     renderBestSellers();
     renderInsights();
     renderCustomers('');
+    if(discountsList.length) renderDiscounts();
+    renderStaffPerformance(allOrders);
   }, (err) => console.warn('orders sync error:', err));
 
   onSnapshot(usabilityFeedbackRef, (snap) => {
@@ -1147,11 +1548,25 @@
       wrap.innerHTML = '<div class="note-box">ما فيه أكواد خصم مضافة بعد</div>';
       return;
     }
-    wrap.innerHTML = discountsList.map(d => `
+    const usageByCode = {};
+    allOrders.forEach(o => {
+      if(!o.discountCode) return;
+      usageByCode[o.discountCode] = usageByCode[o.discountCode] || {count:0, saved:0};
+      usageByCode[o.discountCode].count++;
+      usageByCode[o.discountCode].saved += (o.discountAmount || 0);
+    });
+    wrap.innerHTML = discountsList.map(d => {
+      const usage = usageByCode[d.code] || {count:0, saved:0};
+      return `
       <div class="discount-card">
-        <div class="info"><div class="code">${escapeHtml(d.code)}</div><div class="val">${discountDescText(d)}</div></div>
+        <div class="info">
+          <div class="code">${escapeHtml(d.code)}</div>
+          <div class="val">${discountDescText(d)}</div>
+          <div class="usage">استُخدم ${usage.count} مرة${usage.saved ? ` — وفّر ${usage.saved.toLocaleString('ar-SA')} ر.س للزبائن` : ''}</div>
+        </div>
         <button class="del-btn" data-del-discount="${d.id}" aria-label="حذف ${escapeHtml(d.code)}">🗑️</button>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     wrap.querySelectorAll('[data-del-discount]').forEach(btn => {
       btn.addEventListener('click', () => {
         discountsList = discountsList.filter(d => d.id !== btn.dataset.delDiscount);
@@ -1204,22 +1619,233 @@
       <div class="customer-order-row"><span>${escapeHtml(r.staffName)}</span><span>${fmtDateTime(r.at)}</span></div>
     `).join('');
   }
+  let allAttendanceRecords = [];
   onSnapshot(attendanceRef, (snap) => {
     const records = (snap.exists() && snap.data().records) ? snap.data().records : [];
+    allAttendanceRecords = records;
     renderAttendance(records);
   }, (err) => console.warn('attendance sync error:', err));
 
+  // ================= staff notices =================
+  function setNoticeStatus(text, cls){
+    const el = document.getElementById('noticeSaveStatus');
+    el.textContent = text;
+    el.className = 'staff-save-status' + (cls ? ' ' + cls : '');
+  }
+  function renderStaffNotices(notices){
+    const wrap = document.getElementById('staffNoticesList');
+    if(!notices || !notices.length){
+      wrap.innerHTML = '<div class="note-box">ما فيه ملاحظات منشورة حالياً</div>';
+      return;
+    }
+    const sorted = notices.map((n,i) => ({...n, idx:i})).sort((a,b) => b.at - a.at);
+    wrap.innerHTML = sorted.map(n => `
+      <div class="deduction-row">
+        <div><div class="reason">${escapeHtml(n.text)}</div><div class="date">${fmtDateTime(n.at)}</div></div>
+        <button class="del-ded" data-del-notice="${n.idx}" aria-label="حذف الملاحظة">✕</button>
+      </div>`).join('');
+    wrap.querySelectorAll('[data-del-notice]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.delNotice, 10);
+        setNoticeStatus('جارِ الحذف...', 'saving');
+        window.deleteStaffNoticeAt(idx).then((ok) => {
+          setNoticeStatus(ok ? '✅ تم الحذف' : '⚠️ تعذّر الحذف', ok ? 'saved' : 'error');
+        });
+      });
+    });
+  }
+  window.publishStaffNotice = function(text){
+    if(!text || !text.trim()){ return Promise.resolve({ok:false, msg:'⚠️ اكتب نص الملاحظة'}); }
+    return getDoc(staffNoticesRef).then((snap) => {
+      const notices = (snap.exists() && snap.data().notices) ? snap.data().notices : [];
+      notices.push({ text: text.trim(), at: Date.now() });
+      return setDoc(staffNoticesRef, { notices, updatedAt: Date.now() });
+    }).then(() => ({ok:true})).catch(() => ({ok:false, msg:'⚠️ تعذّر النشر — تأكد من الإنترنت'}));
+  };
+  window.deleteStaffNoticeAt = function(index){
+    return getDoc(staffNoticesRef).then((snap) => {
+      const notices = (snap.exists() && snap.data().notices) ? snap.data().notices : [];
+      notices.splice(index, 1);
+      return setDoc(staffNoticesRef, { notices, updatedAt: Date.now() });
+    }).then(() => true).catch(() => false);
+  };
+  onSnapshot(staffNoticesRef, (snap) => {
+    const notices = (snap.exists() && snap.data().notices) ? snap.data().notices : [];
+    renderStaffNotices(notices);
+  }, (err) => console.warn('staff notices sync error:', err));
+
   // ================= customers =================
   let openCustomerPhone = null;
+  let loyaltyBonuses = {};
+  const loyaltyBonusesRef = doc(db, 'diwaniya', 'loyaltyBonuses');
+  window.awardLoyaltyPoints = function(phone, points){
+    return getDoc(loyaltyBonusesRef).then((snap) => {
+      const bonuses = (snap.exists() && snap.data().bonuses) ? snap.data().bonuses : {};
+      bonuses[phone] = (bonuses[phone] || 0) + points;
+      return setDoc(loyaltyBonusesRef, { bonuses, updatedAt: Date.now() });
+    }).then(() => true).catch(() => false);
+  };
+  onSnapshot(loyaltyBonusesRef, (snap) => {
+    loyaltyBonuses = (snap.exists() && snap.data().bonuses) ? snap.data().bonuses : {};
+    renderCustomers(document.getElementById('customerSearch').value);
+  }, (err) => console.warn('loyalty bonuses sync error:', err));
+
+  let loyaltyRedemptions = {};
+  const loyaltyRedemptionsRef = doc(db, 'diwaniya', 'loyaltyRedemptions');
+  onSnapshot(loyaltyRedemptionsRef, (snap) => {
+    loyaltyRedemptions = (snap.exists() && snap.data().redeemed) ? snap.data().redeemed : {};
+    renderCustomers(document.getElementById('customerSearch').value);
+  }, (err) => console.warn('loyalty redemptions sync error:', err));
+
+  let customerDirectory = [];
+  const customerDirectoryRef = doc(db, 'diwaniya', 'customerDirectory');
+  onSnapshot(customerDirectoryRef, (snap) => {
+    customerDirectory = (snap.exists() && snap.data().customers) ? snap.data().customers : [];
+    renderCustomers(document.getElementById('customerSearch').value);
+  }, (err) => console.warn('customer directory sync error:', err));
+
+  // ================= owner settings (PIN + restaurant name + multiple owners) =================
+  onSnapshot(ownerSettingsRef, (snap) => {
+    const data = snap.exists() ? snap.data() : {};
+    if(data.pin){
+      try{ localStorage.setItem('diwaniya-owner-pin-cache', data.pin); }catch(e){}
+    }
+    const owners = data.owners || (data.pin ? [{id:'default', name:'المالك', pin:data.pin}] : []);
+    try{ localStorage.setItem('diwaniya-owners-cache', JSON.stringify(owners)); }catch(e){}
+    renderOwnersList(owners);
+    if(data.restaurantName){
+      const nameEl = document.getElementById('restaurantNameDisplay');
+      if(nameEl) nameEl.textContent = 'مركز قيادة ' + data.restaurantName + ' — كل شي بمكان وحد';
+      const inputEl = document.getElementById('restaurantNameInput');
+      if(inputEl && document.activeElement !== inputEl) inputEl.value = data.restaurantName;
+    }
+  }, (err) => console.warn('owner settings sync error:', err));
+
+  function renderOwnersList(owners){
+    const wrap = document.getElementById('ownersList');
+    if(!wrap) return;
+    if(!owners.length){
+      wrap.innerHTML = '<div class="note-box">ما فيه حسابات ملاك مسجّلة بعد</div>';
+      return;
+    }
+    wrap.innerHTML = owners.map(o => `
+      <div class="branch-card">
+        <div class="ic">👤</div>
+        <div class="info"><div class="t">${escapeHtml(o.name)}</div></div>
+        ${owners.length > 1 ? `<button class="del-btn" data-del-owner="${o.id}" aria-label="حذف ${escapeHtml(o.name)}">🗑️</button>` : ''}
+      </div>`).join('');
+    wrap.querySelectorAll('[data-del-owner]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const statusEl = document.getElementById('ownersStatus');
+        statusEl.textContent = 'جارِ الحذف...';
+        statusEl.className = 'staff-save-status saving';
+        window.deleteOwnerAccount(btn.dataset.delOwner).then((result) => {
+          statusEl.textContent = result.ok ? '✅ تم الحذف' : result.msg;
+          statusEl.className = 'staff-save-status ' + (result.ok ? 'saved' : 'error');
+        });
+      });
+    });
+  }
+
+  function getOwnersFromDoc(data){
+    return data.owners || (data.pin ? [{id:'default', name:'المالك', pin:data.pin}] : []);
+  }
+
+  window.addOwnerAccount = function(name, pin){
+    return getDoc(ownerSettingsRef).then((snap) => {
+      const data = snap.exists() ? snap.data() : {};
+      const owners = getOwnersFromDoc(data);
+      if(owners.some(o => o.pin === pin)){
+        return {ok:false, msg:'⚠️ هذا الرمز مستخدم لمالك ثاني أصلاً'};
+      }
+      const newOwners = [...owners, {id:'owner-'+Date.now().toString(36), name, pin}];
+      return setDoc(ownerSettingsRef, { owners: newOwners, updatedAt: Date.now() }, { merge: true })
+        .then(() => ({ok:true}))
+        .catch(() => ({ok:false, msg:'⚠️ تعذّر الحفظ — تأكد من الإنترنت'}));
+    });
+  };
+
+  window.deleteOwnerAccount = function(id){
+    return getDoc(ownerSettingsRef).then((snap) => {
+      const data = snap.exists() ? snap.data() : {};
+      const owners = getOwnersFromDoc(data);
+      if(owners.length <= 1){
+        return {ok:false, msg:'⚠️ لازم يبقى مالك واحد على الأقل'};
+      }
+      const newOwners = owners.filter(o => o.id !== id);
+      return setDoc(ownerSettingsRef, { owners: newOwners, updatedAt: Date.now() }, { merge: true })
+        .then(() => ({ok:true}))
+        .catch(() => ({ok:false, msg:'⚠️ تعذّر الحذف — تأكد من الإنترنت'}));
+    });
+  };
+
+  window.saveRestaurantName = function(name){
+    return setDoc(ownerSettingsRef, { restaurantName: name, updatedAt: Date.now() }, { merge: true })
+      .then(() => true).catch(() => false);
+  };
+
+  window.changeOwnerPin = function(currentPin, newPin){
+    return getDoc(ownerSettingsRef).then((snap) => {
+      const actualPin = (snap.exists() && snap.data().pin) ? snap.data().pin : '550012';
+      if(currentPin !== actualPin){
+        return {ok:false, msg:'⚠️ الرمز الحالي غلط'};
+      }
+      return setDoc(ownerSettingsRef, { pin: newPin, updatedAt: Date.now() }, { merge: true })
+        .then(() => {
+          try{ localStorage.setItem('diwaniya-owner-pin-cache', newPin); }catch(e){}
+          return {ok:true};
+        })
+        .catch(() => ({ok:false, msg:'⚠️ تعذّر الحفظ — تأكد من الإنترنت'}));
+    });
+  };
+
+  window.downloadFullBackup = function(){
+    const refs = {
+      liveOrders: doc(db, 'diwaniya', 'liveOrders'),
+      menuOverrides: doc(db, 'diwaniya', 'menuOverrides'),
+      staffAccounts: doc(db, 'diwaniya', 'staffAccounts'),
+      usabilityFeedback: doc(db, 'diwaniya', 'usabilityFeedback'),
+      branchesList: doc(db, 'diwaniya', 'branchesList'),
+      discountCodes: doc(db, 'diwaniya', 'discountCodes'),
+      attendance: doc(db, 'diwaniya', 'attendance'),
+      staffNotices: doc(db, 'diwaniya', 'staffNotices'),
+      loyaltyBonuses: doc(db, 'diwaniya', 'loyaltyBonuses'),
+      loyaltyRedemptions: doc(db, 'diwaniya', 'loyaltyRedemptions'),
+      customerDirectory: doc(db, 'diwaniya', 'customerDirectory'),
+    };
+    const keys = Object.keys(refs);
+    return Promise.all(keys.map(k => getDoc(refs[k]))).then((snaps) => {
+      const backup = { exportedAt: new Date().toISOString() };
+      keys.forEach((k, i) => { backup[k] = snaps[i].exists() ? snaps[i].data() : null; });
+      const json = JSON.stringify(backup, null, 2);
+      const blob = new Blob([json], {type:'application/json;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if(isIOS){
+        window.open(url, '_blank');
+      } else {
+        const a = document.createElement('a');
+        a.href = url; a.download = 'diwaniya-backup-' + new Date().toISOString().slice(0,10) + '.json';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      return true;
+    }).catch(() => false);
+  };
+
   function fmtDateTime(ts){
     return new Date(ts).toLocaleString('ar-SA', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
   }
   function renderCustomers(filter){
     const wrap = document.getElementById('customersList');
     const byPhone = {};
+    customerDirectory.forEach(c => {
+      byPhone[c.phone] = byPhone[c.phone] || {name:c.name||'زبون', phone:c.phone, orders:[], spend:0, signedUpAt:c.signedUpAt};
+    });
     allOrders.filter(o => o.customerPhone).forEach(o => {
       const key = o.customerPhone;
       byPhone[key] = byPhone[key] || {name:o.customerName||'زبون', phone:key, orders:[], spend:0};
+      if(o.customerName) byPhone[key].name = o.customerName;
       byPhone[key].orders.push(o);
       if(o.status === 'completed') byPhone[key].spend += (o.total||0);
     });
@@ -1228,12 +1854,16 @@
     if(f) list = list.filter(c => (c.name||'').toLowerCase().includes(f) || (c.phone||'').includes(f));
     list.sort((a,b) => b.orders.length - a.orders.length);
     if(!list.length){
-      wrap.innerHTML = '<div class="note-box">ما فيه زبائن مطابقين، أو ما وصلت بيانات زبائن كافية بعد (يحتاج تسجيل دخول بالجوال وقت الطلب)</div>';
+      wrap.innerHTML = '<div class="note-box">ما فيه زبائن مطابقين، أو ما فيه أحد سجّل حساب أو طلب بعد</div>';
       return;
     }
     wrap.innerHTML = list.map(c => {
       const isOpen = c.phone === openCustomerPhone;
       const sortedOrders = [...c.orders].sort((a,b) => b.createdAt - a.createdAt);
+      const basePoints = Math.floor(c.spend / 10);
+      const bonusPoints = (loyaltyBonuses[c.phone] || 0);
+      const redeemedPoints = (loyaltyRedemptions[c.phone] || 0);
+      const totalPoints = Math.max(0, basePoints + bonusPoints - redeemedPoints);
       return `
       <div class="customer-card" data-customer="${c.phone}">
         <div class="top">
@@ -1242,15 +1872,32 @@
           <div class="stat">${c.spend.toLocaleString('ar-SA')} ر.س<div class="sub">${c.orders.length} طلب</div></div>
         </div>
         <div class="customer-detail ${isOpen ? 'open' : ''}">
-          ${sortedOrders.map(o => `
+          <div class="loyalty-box">
+            <div class="loyalty-points">🎁 ${totalPoints} نقطة ولاء متاحة${bonusPoints ? ` (منها ${bonusPoints} إضافية)` : ''}${redeemedPoints ? ` — استُخدم ${redeemedPoints} سابقاً` : ''}</div>
+            <div class="loyalty-award">
+              <input type="number" min="1" placeholder="عدد النقاط" id="bonusPoints-${c.phone}">
+              <button class="loyalty-award-btn" data-award-points="${c.phone}">➕ منح</button>
+            </div>
+          </div>
+          ${sortedOrders.length ? sortedOrders.map(o => `
             <div class="customer-order-row">
               <span>#${o.number} — ${o.branchLabel || 'غير محدد'}</span>
               <span>${o.total||0} ر.س</span>
               <span>${fmtDateTime(o.createdAt)}</span>
-            </div>`).join('')}
+            </div>`).join('') : `<div class="note-box">سجّل حساب${c.signedUpAt ? ' بتاريخ ' + fmtDateTime(c.signedUpAt) : ''}، ما طلب بعد</div>`}
         </div>
       </div>`;
     }).join('');
+    wrap.querySelectorAll('[data-award-points]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const phone = btn.dataset.awardPoints;
+        const input = document.getElementById('bonusPoints-' + phone);
+        const points = parseInt(input.value, 10);
+        if(isNaN(points) || points <= 0) return;
+        window.awardLoyaltyPoints(phone, points).then(() => { input.value = ''; });
+      });
+    });
     wrap.querySelectorAll('[data-customer]').forEach(card => {
       card.addEventListener('click', () => {
         const phone = card.dataset.customer;
@@ -1337,6 +1984,31 @@
       </div>`).join('')}</div>`;
   }
 
+  function renderWeekComparison(orders){
+    const wrap = document.getElementById('weekComparisonChart');
+    const dayLabels = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+    const now = new Date();
+    const startOfThisWeek = new Date(now); startOfThisWeek.setHours(0,0,0,0); startOfThisWeek.setDate(now.getDate() - now.getDay());
+    const startOfLastWeek = new Date(startOfThisWeek); startOfLastWeek.setDate(startOfThisWeek.getDate() - 7);
+    const thisWeek = [0,0,0,0,0,0,0];
+    const lastWeek = [0,0,0,0,0,0,0];
+    orders.filter(o => o.status==='completed').forEach(o => {
+      const d = new Date(o.createdAt);
+      if(d >= startOfThisWeek){ thisWeek[d.getDay()] += (o.total||0); }
+      else if(d >= startOfLastWeek && d < startOfThisWeek){ lastWeek[d.getDay()] += (o.total||0); }
+    });
+    const maxVal = Math.max(1, ...thisWeek, ...lastWeek);
+    wrap.innerHTML = dayLabels.map((label,i) => `
+      <div class="week-cmp-row">
+        <div class="week-cmp-label">${label}</div>
+        <div class="week-cmp-bars">
+          <div class="week-cmp-bar this-week" style="width:${Math.max(1,(thisWeek[i]/maxVal*100))}%"></div>
+          <div class="week-cmp-bar last-week" style="width:${Math.max(1,(lastWeek[i]/maxVal*100))}%"></div>
+        </div>
+        <div class="week-cmp-vals">${thisWeek[i].toLocaleString('ar-SA')} ر.س مقابل ${lastWeek[i].toLocaleString('ar-SA')} ر.س</div>
+      </div>`).join('');
+  }
+
   function renderLoyalCustomers(orders){
     const wrap = document.getElementById('loyalCustomers');
     const byCustomer = {};
@@ -1389,6 +2061,42 @@
       renderLoyalCustomers(allOrders);
     }
     renderUsabilityFeedback(window.diwaniyaUsabilityFeedback);
+    renderCancelledOrders(allOrders);
+  }
+  function renderCancelledOrders(orders){
+    const wrap = document.getElementById('cancelledOrders');
+    const cancelled = orders.filter(o => o.status === 'cancelled').sort((a,b) => (b.cancelledAt||0) - (a.cancelledAt||0));
+    if(!cancelled.length){
+      wrap.innerHTML = '<div class="note-box">ما فيه طلبات ملغية — ممتاز! 🎉</div>';
+      return;
+    }
+    wrap.innerHTML = cancelled.slice(0, 30).map(o => `
+      <div class="customer-order-row">
+        <span>#${o.number} — ${escapeHtml(o.cancelReason || 'غير محدد')}${o.cancelledBy ? ' (' + escapeHtml(o.cancelledBy) + ')' : ''}</span>
+        <span>${o.cancelledAt ? fmtDateTime(o.cancelledAt) : ''}</span>
+      </div>`).join('');
+  }
+  function renderStaffPerformance(orders){
+    const wrap = document.getElementById('staffPerformance');
+    if(!wrap) return;
+    const byStaff = {};
+    orders.forEach(o => {
+      if(!o.readyBy || !o.startedAt || !o.readyAt) return;
+      byStaff[o.readyBy] = byStaff[o.readyBy] || {count:0, totalMin:0};
+      byStaff[o.readyBy].count++;
+      byStaff[o.readyBy].totalMin += (o.readyAt - o.startedAt) / 60000;
+    });
+    const list = Object.entries(byStaff).map(([name, d]) => ({name, count:d.count, avgMin: d.totalMin/d.count}));
+    list.sort((a,b) => b.count - a.count);
+    if(!list.length){
+      wrap.innerHTML = '<div class="note-box">ما فيه بيانات أداء كافية بعد — تحتاج طلبات جهّزها موظفين مسجّلين برمزهم بشاشة المطبخ</div>';
+      return;
+    }
+    wrap.innerHTML = list.map(s => `
+      <div class="loyal-row">
+        <div class="info"><div class="name">${escapeHtml(s.name)}</div><div class="n">${s.count} طلب جهّزه</div></div>
+        <div class="spend">${s.avgMin.toFixed(1)} د متوسط</div>
+      </div>`).join('');
   }
   window.onUsabilityFeedbackUpdate = function(entries){
     renderUsabilityFeedback(entries);
@@ -1449,6 +2157,10 @@
   }
 
   let editStaffId = null;
+  const SHIFT_DAYS = [
+    {key:'sun', label:'الأحد'}, {key:'mon', label:'الاثنين'}, {key:'tue', label:'الثلاثاء'},
+    {key:'wed', label:'الأربعاء'}, {key:'thu', label:'الخميس'}, {key:'fri', label:'الجمعة'}, {key:'sat', label:'السبت'},
+  ];
 
   function isCurrentMonth(ts){
     const d = new Date(ts), now = new Date();
@@ -1493,6 +2205,16 @@
             <select id="editBranch-${s.id}"><option value="">اختر الفرع</option>${branchOptions}</select>
             <label class="edit-lbl">الراتب الأساسي (الثابت)</label>
             <input type="number" id="editSalary-${s.id}" value="${s.salary||0}" min="0" placeholder="الراتب">
+            <label class="edit-lbl">🗓️ جدول الدوام الأسبوعي</label>
+            ${SHIFT_DAYS.map(d => {
+              const cur = (s.shifts && s.shifts[d.key]) || {};
+              return `<div class="shift-row">
+                <span class="shift-day">${d.label}</span>
+                <input type="time" id="shiftStart-${s.id}-${d.key}" value="${cur.start||''}">
+                <span class="shift-sep">–</span>
+                <input type="time" id="shiftEnd-${s.id}-${d.key}" value="${cur.end||''}">
+              </div>`;
+            }).join('')}
             <div class="edit-actions">
               <button class="edit-save-btn" data-save-edit="${s.id}">💾 حفظ</button>
               <button class="edit-cancel-btn" data-cancel-edit="${s.id}">إلغاء</button>
@@ -1505,7 +2227,13 @@
             <div class="detail-item highlight"><div class="lbl">راتب هذا الشهر</div><div class="val">${currentMonthPay.toLocaleString('ar-SA')} ر.س</div></div>
             <div class="detail-item"><div class="lbl">مدة الخدمة</div><div class="val">${tenureText(s.hiredAt)}</div></div>
           </div>
-          <button class="edit-btn" data-edit-staff="${s.id}">✏️ تعديل الوظيفة والراتب والفرع</button>
+          <div class="cat-title-sub">🗓️ جدول الدوام</div>
+          <div class="shift-summary">${SHIFT_DAYS.map(d => {
+            const cur = (s.shifts && s.shifts[d.key]) || {};
+            const text = (cur.start && cur.end) ? `${cur.start}–${cur.end}` : 'إجازة';
+            return `<div class="shift-summary-row"><span>${d.label}</span><span>${text}</span></div>`;
+          }).join('')}</div>
+          <button class="edit-btn" data-edit-staff="${s.id}">✏️ تعديل الوظيفة والراتب والفرع والدوام</button>
           `}
           <button class="active-toggle ${active ? 'is-active' : 'is-inactive'}" data-toggle-active="${s.id}">
             ${active ? '✅ نشط الآن — اضغط لإيقافه مؤقتاً' : '⏸️ موقوف الآن — اضغط لتفعيله'}
@@ -1578,6 +2306,13 @@
         s.rank = document.getElementById('editRank-' + id).value.trim();
         s.branch = document.getElementById('editBranch-' + id).value;
         s.salary = parseFloat(document.getElementById('editSalary-' + id).value) || 0;
+        const shifts = {};
+        SHIFT_DAYS.forEach(d => {
+          const start = document.getElementById(`shiftStart-${id}-${d.key}`).value;
+          const end = document.getElementById(`shiftEnd-${id}-${d.key}`).value;
+          if(start && end) shifts[d.key] = { start, end };
+        });
+        s.shifts = shifts;
         editStaffId = null;
         renderStaff();
         saveStaff();
@@ -1653,6 +2388,7 @@
       salary: extra.salary || 0,
       deductions: [],
       bonuses: [],
+      shifts: {},
       hiredAt: Date.now(),
       active: true,
     });
