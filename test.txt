@@ -1,0 +1,1 @@
+test file - if you can upload this successfully, the issue is specific to the HTML file, not GitHub/Safari in general
