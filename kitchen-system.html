@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>نظام المطبخ — ديفان الخليج</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#181209;
+    --panel:#221A10;
+    --panel2:#1D160D;
+    --line:#3A2C1A;
+    --ink:#F2E9DA;
+    --ink-soft:#C2A98A;
+    --gold:#E3B45C;
+    --gold-strong:#C8962A;
+    --accent:#8C3A3A;
+    --fresh:#3C8F4A;
+    --warn:#D69A2D;
+    --urgent:#C0392B;
+    --card:#2A2013;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{ background:var(--bg); color:var(--ink); font-family:'Cairo',sans-serif; -webkit-tap-highlight-color:transparent; }
+  body{ padding-bottom:30px; }
+  button{ font-family:'Cairo',sans-serif; cursor:pointer; transition:transform .12s ease; }
+  button:active{ transform:scale(0.96); }
+  @media (prefers-reduced-motion: reduce){
+    button:active{ transform:none; }
+  }
+  input, select, textarea{ font-family:'Cairo',sans-serif; }
+
+  /* ---------- header ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:20; background:var(--panel2); border-bottom:1px solid var(--line);
+    padding:12px 16px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; flex:none; }
+  .brand h1{ font-family:'Aref Ruqaa',serif; font-size:22px; color:var(--gold); }
+  .brand .sub{ font-size:11px; color:var(--ink-soft); }
+  .staff-name-badge{ font-size:10.5px; color:var(--gold); font-weight:700; margin-top:2px; cursor:pointer; }
+  .staff-notice-banner{
+    margin:10px 16px; padding:11px 14px; border-radius:12px; background:var(--chef,#B9A4F0);
+    color:#241a3a; display:flex; align-items:center; justify-content:space-between; gap:10px;
+    font-size:13px; font-weight:700;
+  }
+  .staff-notice-banner button{ background:none; border:none; color:#241a3a; font-size:15px; flex:none; }
+  .clock{ font-size:13px; font-weight:700; color:var(--ink-soft); flex:none; }
+  .conn-status{ font-size:11px; flex:none; }
+  .help-btn{
+    flex:none; padding:0 12px; height:36px; border-radius:20px; border:1px solid var(--urgent);
+    background:rgba(192,57,43,0.15); color:var(--urgent); font-size:12px; font-weight:700; font-family:'Cairo',sans-serif;
+  }
+  .order-search-row{ padding:8px 16px 0; }
+  .order-search-row input{
+    width:100%; padding:10px 14px; border-radius:12px; border:1px solid var(--line); background:var(--panel);
+    color:var(--ink); font-size:13px; outline:none; font-family:'Cairo',sans-serif;
+  }
+  .order-search-row input:focus{ border-color:var(--gold); }
+  .role-toggle{ display:flex; gap:6px; margin-inline-start:auto; flex:none; }
+  .role-btn{
+    padding:8px 14px; border-radius:20px; border:1px solid var(--line); background:var(--panel);
+    color:var(--ink-soft); font-weight:700; font-size:12.5px;
+  }
+  .role-btn.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
+  .new-order-btn{
+    flex:none; padding:9px 16px; border-radius:20px; border:none; background:var(--gold); color:#241a05;
+    font-weight:800; font-size:13px; box-shadow:0 4px 10px rgba(227,180,92,0.3);
+  }
+
+  /* ---------- stats bar ---------- */
+  .stats-bar{
+    display:flex; gap:10px; padding:10px 16px; overflow-x:auto; scrollbar-width:none; background:var(--bg);
+  }
+  .stats-bar::-webkit-scrollbar{ display:none; }
+  .stat-chip{
+    flex:none; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:8px 14px;
+    text-align:center; min-width:88px;
+  }
+  .stat-chip .val{ font-size:18px; font-weight:800; color:var(--gold); }
+  .stat-chip .lbl{ font-size:10.5px; color:var(--ink-soft); font-weight:600; margin-top:2px; }
+
+  /* ---------- filters ---------- */
+  .filter-bar{ display:flex; gap:8px; padding:0 16px 12px; overflow-x:auto; scrollbar-width:none; }
+  .filter-bar::-webkit-scrollbar{ display:none; }
+  .filter-chip{
+    flex:none; padding:7px 14px; border-radius:20px; border:1px solid var(--line); background:var(--panel);
+    color:var(--ink-soft); font-weight:700; font-size:12px; display:flex; align-items:center; gap:5px;
+  }
+  .filter-chip.active{ background:var(--gold); color:#241a05; border-color:var(--gold); }
+  .filter-sep{ width:1px; background:var(--line); flex:none; margin:4px 2px; }
+
+  /* ---------- alert banner ---------- */
+  .alert-banner{
+    position:fixed; top:70px; left:50%; transform:translateX(-50%) translateY(-30px); z-index:40;
+    background:var(--urgent); color:#fff; padding:12px 22px; border-radius:14px; font-weight:800; font-size:14px;
+    opacity:0; pointer-events:none; transition:transform .3s, opacity .3s; box-shadow:0 10px 26px rgba(0,0,0,0.4);
+  }
+  .alert-banner.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ---------- board ---------- */
+  .board{ display:flex; gap:14px; padding:6px 16px 24px; overflow-x:auto; align-items:flex-start; }
+  .column{ flex:none; width:340px; background:var(--panel2); border-radius:16px; border:1px solid var(--line); overflow:hidden; }
+  .column-head{
+    padding:12px 14px; display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--panel2); z-index:2;
+  }
+  .column-head h2{ font-size:14.5px; font-weight:800; display:flex; align-items:center; gap:6px; }
+  .column-count{ background:var(--card); border-radius:12px; padding:2px 10px; font-size:12px; font-weight:800; color:var(--gold); }
+  .column-body{ padding:10px; display:flex; flex-direction:column; gap:10px; min-height:80px; }
+  .column-empty{ text-align:center; color:var(--ink-soft); font-size:12px; padding:20px 8px; }
+
+  /* ---------- order card ---------- */
+  .order-card{
+    background:var(--card); border-radius:14px; border:1px solid var(--line); padding:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.25);
+  }
+  .order-card.priority{ border-color:var(--urgent); box-shadow:0 0 0 1px var(--urgent), 0 4px 14px rgba(192,57,43,0.25); }
+  .oc-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+  .oc-id{ font-weight:800; font-size:15px; }
+  .oc-id .rush{ color:var(--urgent); font-size:12px; margin-inline-end:4px; }
+  .oc-type{ font-size:11px; font-weight:700; color:var(--ink-soft); display:flex; align-items:center; gap:4px; }
+
+  .timer-ring{
+    --pct:0; --ring-color:var(--fresh); width:50px; height:50px; border-radius:50%; flex:none;
+    background:conic-gradient(var(--ring-color) calc(var(--pct)*1%), rgba(255,255,255,0.12) 0);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .timer-ring .inner{
+    width:40px; height:40px; border-radius:50%; background:var(--card); display:flex; align-items:center;
+    justify-content:center; font-size:10.5px; font-weight:800; color:var(--ink);
+  }
+
+  .oc-items{ display:flex; flex-direction:column; gap:6px; margin-bottom:8px; }
+  .oc-item{ display:flex; align-items:flex-start; gap:8px; background:rgba(255,255,255,0.03); border-radius:10px; padding:7px 9px; }
+  .oc-item input[type="checkbox"]{ width:18px; height:18px; margin-top:2px; accent-color:var(--fresh); flex:none; }
+  .oc-item.checked .item-name{ text-decoration:line-through; color:var(--ink-soft); }
+  .item-name{ font-weight:700; font-size:13px; }
+  .item-qty{ color:var(--gold); font-weight:800; }
+  .item-station{ font-size:10.5px; color:var(--ink-soft); margin-top:1px; }
+  .item-note{ font-size:11.5px; color:var(--urgent); font-weight:700; margin-top:2px; }
+
+  .oc-note{
+    font-size:12px; font-weight:700; color:var(--urgent); background:rgba(192,57,43,0.12);
+    border:1px solid rgba(192,57,43,0.4); border-radius:10px; padding:6px 10px; margin-bottom:8px;
+  }
+
+  .oc-meta{ font-size:11px; color:var(--ink-soft); margin-bottom:8px; }
+  .oc-actions{ display:flex; gap:6px; flex-wrap:wrap; }
+  .oc-btn{
+    flex:1; min-width:90px; padding:9px 8px; border-radius:10px; border:none; font-weight:800; font-size:12.5px;
+  }
+  .oc-btn.primary{ background:var(--gold); color:#241a05; }
+  .oc-btn.primary[disabled]{ opacity:0.35; }
+  .oc-btn.ghost{ background:transparent; border:1px solid var(--line); color:var(--ink-soft); flex:none; width:40px; min-width:40px; }
+  .oc-btn.ghost.cancel-btn:active{ background:rgba(192,57,43,0.15); color:var(--urgent); border-color:var(--urgent); }
+  .oc-btn.rush-on{ border-color:var(--urgent); color:var(--urgent); }
+
+  /* ---------- ready waiting badge ---------- */
+  .waiting-badge{ font-size:11px; font-weight:800; padding:3px 9px; border-radius:10px; }
+  .waiting-badge.fresh{ background:rgba(60,143,74,0.18); color:var(--fresh); }
+  .waiting-badge.warn{ background:rgba(214,154,45,0.18); color:var(--warn); }
+  .waiting-badge.urgent{ background:rgba(192,57,43,0.18); color:var(--urgent); }
+
+  /* ---------- completed drawer ---------- */
+  .completed-toggle{
+    margin:0 16px 16px; padding:10px 16px; border-radius:12px; border:1px dashed var(--line);
+    background:var(--panel); color:var(--ink-soft); font-weight:700; font-size:12.5px; width:calc(100% - 32px);
+    text-align:center;
+  }
+  .completed-drawer{ display:none; padding:0 16px 20px; }
+  .completed-drawer.open{ display:block; }
+  .completed-list{ display:flex; flex-direction:column; gap:8px; }
+  .completed-row{
+    display:flex; align-items:center; justify-content:space-between; background:var(--panel);
+    border:1px solid var(--line); border-radius:10px; padding:8px 12px; font-size:12.5px; color:var(--ink-soft);
+  }
+  .clear-completed-btn{
+    margin-top:10px; padding:8px 14px; border-radius:10px; border:1px solid var(--line); background:transparent;
+    color:var(--urgent); font-weight:700; font-size:12px;
+  }
+
+  /* ---------- new order sheet ---------- */
+  .sheet-overlay{ position:fixed; inset:0; background:rgba(10,7,3,0.6); z-index:50; opacity:0; pointer-events:none; transition:opacity .25s; }
+  .sheet-overlay.open{ opacity:1; pointer-events:auto; }
+  .sheet{
+    position:absolute; left:0; right:0; bottom:0; background:var(--panel2); border-radius:20px 20px 0 0;
+    max-height:90vh; overflow-y:auto; transform:translateY(100%); transition:transform .3s cubic-bezier(.32,.72,0,1);
+    padding:20px 18px 26px;
+  }
+  .sheet-overlay.open .sheet{ transform:translateY(0); }
+  .sheet-handle{ width:38px; height:4px; border-radius:4px; background:var(--line); margin:0 auto 14px; }
+  .sheet-title{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .sheet-title h3{ font-family:'Aref Ruqaa',serif; font-size:20px; color:var(--gold); }
+  .close-x{ width:30px; height:30px; border-radius:50%; border:1px solid var(--line); background:transparent; color:var(--ink-soft); }
+
+  .field-label{ font-size:12.5px; font-weight:700; color:var(--ink-soft); display:block; margin:12px 0 6px; }
+  .pill-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .pill-opt{
+    padding:8px 14px; border-radius:14px; border:1px solid var(--line); background:var(--panel);
+    color:var(--ink-soft); font-weight:700; font-size:12.5px;
+  }
+  .pill-opt.active{ background:var(--gold); color:#241a05; border-color:var(--gold); }
+  .text-input, .num-input, textarea.text-input{
+    width:100%; border:1px solid var(--line); border-radius:12px; background:var(--panel); color:var(--ink);
+    padding:10px 12px; font-size:13.5px; outline:none;
+  }
+  textarea.text-input{ min-height:60px; resize:vertical; }
+
+  .item-picker-row{ display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .item-picker-row select{ flex:1; border:1px solid var(--line); border-radius:10px; background:var(--panel); color:var(--ink); padding:9px 10px; font-size:13px; }
+  .item-picker-row input[type="number"]{ width:56px; text-align:center; border:1px solid var(--line); border-radius:10px; background:var(--panel); color:var(--ink); padding:9px 4px; }
+  .item-picker-row button{ border:none; border-radius:10px; background:var(--accent); color:#fff; font-weight:800; padding:9px 12px; }
+
+  .draft-items{ display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+  .draft-item{ display:flex; align-items:center; justify-content:space-between; background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:7px 10px; font-size:12.5px; }
+  .draft-item button{ border:none; background:transparent; color:var(--urgent); font-weight:800; }
+
+  .submit-order-btn{
+    width:100%; margin-top:18px; padding:14px; border-radius:14px; border:none; background:var(--gold);
+    color:#241a05; font-weight:800; font-size:14.5px;
+  }
+  .submit-order-btn[disabled]{ opacity:0.4; }
+
+  /* ---------- print ticket ---------- */
+  #printArea{ display:none; }
+  @media print{
+    body > *:not(#printArea){ display:none !important; }
+    #printArea{ display:block !important; font-family:'Cairo',sans-serif; color:#000; padding:12px; }
+    #printArea h2{ text-align:center; margin-bottom:6px; }
+    #printArea .p-row{ display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px; }
+    #printArea .p-items{ margin-top:10px; border-top:1px dashed #000; padding-top:8px; }
+    #printArea .p-item{ font-size:13px; margin-bottom:4px; }
+    #printArea .p-note{ font-weight:800; margin-top:8px; border:1px solid #000; padding:6px; }
+  }
+
+  ::-webkit-scrollbar{ height:6px; width:6px; }
+  ::-webkit-scrollbar-thumb{ background:var(--line); border-radius:6px; }
+  body.pin-locked > *:not(.pin-gate){ display:none !important; }
+  .pin-gate{
+    position:fixed; inset:0; z-index:200; background:var(--bg);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px;
+    font-family:'Cairo',sans-serif;
+  }
+  .pin-gate h2{ font-family:'Aref Ruqaa',serif; color:var(--gold); font-size:24px; margin-bottom:6px; }
+  .pin-gate .sub{ color:var(--ink-soft); font-size:12.5px; margin-bottom:20px; }
+  .pin-text-input{
+    width:220px; text-align:center; direction:ltr; letter-spacing:10px; font-size:22px; font-weight:800;
+    padding:14px 10px; border-radius:14px; border:1px solid var(--line); background:var(--panel);
+    color:var(--ink); font-family:'Cairo',sans-serif; outline:none;
+  }
+  .pin-text-input:focus{ border-color:var(--gold); }
+  .pin-error{ color:var(--urgent); font-size:12.5px; font-weight:700; margin-top:10px; display:none; min-height:16px; }
+  .pin-debug{ color:var(--ink-soft); font-size:11px; margin-top:8px; }
+  .pin-submit{
+    margin-top:16px; padding:12px 40px; border-radius:14px; border:none; background:var(--gold);
+    color:#241a05; font-weight:800; font-size:14.5px; cursor:pointer; font-family:'Cairo',sans-serif;
+  }
+  .biometric-btn{
+    margin-top:12px; padding:12px 30px; border-radius:14px; border:2px solid var(--gold); background:none;
+    color:var(--gold); font-weight:800; font-size:13.5px; cursor:pointer; font-family:'Cairo',sans-serif;
+  }
+</style>
+</head>
+<body class="pin-locked">
+<div class="pin-gate">
+  <h2>🔒 لوحة المطبخ</h2>
+  <div class="sub">أدخل رمز الدخول الخاص بالموظفين</div>
+  <input type="password" id="pinTextInput" class="pin-text-input" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="••••••">
+  <div class="pin-debug" id="pinDebug">عدد الأرقام المكتوبة: 0</div>
+  <div class="pin-error" id="pinError">رمز غير صحيح، حاول مرة ثانية</div>
+  <button class="pin-submit" id="pinSubmit">دخول</button>
+  <button class="biometric-btn" id="biometricBtn" style="display:none;">🔐 دخول بالبصمة / Face ID</button>
+</div>
+<script>
+(function(){
+  // رمز رئيسي احتياطي — يشتغل دايماً حتى بدون إنترنت أو قبل ما تضيف موظفين
+  var STAFF_PIN = '201294';
+  var STORAGE_KEY = 'diwaniya-staff-pin-ok';
+  var STAFF_NAME_KEY = 'diwaniya-staff-name';
+  var STAFF_ID_KEY = 'diwaniya-staff-id';
+
+  function bytesToBase64(bytes){
+    var bin = '';
+    for(var i=0;i<bytes.length;i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  }
+  function base64ToBytes(b64){
+    var bin = atob(b64);
+    var bytes = new Uint8Array(bin.length);
+    for(var i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  }
+
+  function updateBiometricVisibility(){
+    var btn = document.getElementById('biometricBtn');
+    if(!btn) return;
+    var supported = !!(window.PublicKeyCredential && navigator.credentials);
+    var list = window.diwaniyaStaffList || [];
+    var hasRegistered = list.some(function(s){ return s && s.biometricCredId; });
+    btn.style.display = (supported && hasRegistered) ? 'block' : 'none';
+  }
+  window.onStaffListUpdate = function(){ updateBiometricVisibility(); };
+
+  function tryBiometricUnlock(){
+    var err = document.getElementById('pinError');
+    var list = window.diwaniyaStaffList || [];
+    var candidates = list.filter(function(s){ return s && s.biometricCredId; });
+    if(!candidates.length){
+      if(err){ err.style.display='block'; err.style.color='#C0392B'; err.textContent='ما فيه بصمات مسجّلة بعد، استخدم الرمز'; }
+      return;
+    }
+    var allowCredentials = candidates.map(function(s){
+      return { type:'public-key', id: base64ToBytes(s.biometricCredId) };
+    });
+    var challenge = new Uint8Array(32);
+    crypto.getRandomValues(challenge);
+    navigator.credentials.get({
+      publicKey: {
+        challenge: challenge,
+        rpId: location.hostname,
+        allowCredentials: allowCredentials,
+        userVerification: 'required',
+        timeout: 60000,
+      }
+    }).then(function(assertion){
+      var credId = bytesToBase64(new Uint8Array(assertion.rawId));
+      var matched = null;
+      for(var i=0; i<candidates.length; i++){ if(candidates[i].biometricCredId === credId){ matched = candidates[i]; break; } }
+      if(matched){
+        try{
+          localStorage.setItem(STORAGE_KEY, '1');
+          localStorage.setItem(STAFF_NAME_KEY, matched.name);
+          localStorage.setItem(STAFF_ID_KEY, matched.id);
+        }catch(e){}
+        tryLogAttendance(matched.id, matched.name, 0);
+        if(err){ err.textContent = '✅ تطابق! جاري الفتح...'; err.style.color = '#3C8F4A'; }
+        unlockNow();
+      } else {
+        if(err){ err.style.display='block'; err.style.color='#C0392B'; err.textContent='ما قدرنا نتعرف عليك، جرب الرمز'; }
+      }
+    }).catch(function(){
+      if(err){ err.style.display='block'; err.style.color='#C0392B'; err.textContent='تعذّر التحقق بالبصمة، جرب الرمز'; }
+    });
+  }
+
+
+  function unlockNow(){
+    document.body.classList.remove('pin-locked');
+    var gate = document.querySelector('.pin-gate');
+    if(gate) gate.style.display = 'none';
+    showStaffBadge();
+  }
+
+  function showStaffBadge(){
+    var name = null;
+    try{ name = localStorage.getItem(STAFF_NAME_KEY); }catch(e){}
+    var badge = document.getElementById('staffNameBadge');
+    if(badge) badge.textContent = name ? ('👤 ' + name) : '👤 دخول عام';
+  }
+
+  function findStaffByPin(pin){
+    var list = window.diwaniyaStaffList || [];
+    for(var i=0; i<list.length; i++){
+      if(list[i] && list[i].pin === pin) return list[i];
+    }
+    return null;
+  }
+
+  try{ if(localStorage.getItem(STORAGE_KEY)==='1') unlockNow(); }catch(e){}
+
+  function tryLogAttendance(staffId, staffName, attempts){
+    if(window.logAttendance){
+      window.logAttendance(staffId, staffName).then(function(ok){
+        if(!ok && attempts < 10) setTimeout(function(){ tryLogAttendance(staffId, staffName, attempts+1); }, 2000);
+      });
+    } else if(attempts < 10){
+      setTimeout(function(){ tryLogAttendance(staffId, staffName, attempts+1); }, 1000);
+    }
+  }
+
+  function tryUnlock(){
+    try{
+      var input = document.getElementById('pinTextInput');
+      var err = document.getElementById('pinError');
+      var entered = (input && input.value ? input.value : '').replace(/[^0-9]/g, '');
+      if(err){
+        err.style.display = 'block';
+        err.style.color = '#C0392B';
+      }
+      var staffMatch = findStaffByPin(entered);
+      if(entered === STAFF_PIN || staffMatch){
+        try{
+          localStorage.setItem(STORAGE_KEY, '1');
+          if(staffMatch){ localStorage.setItem(STAFF_NAME_KEY, staffMatch.name); localStorage.setItem(STAFF_ID_KEY, staffMatch.id); }
+          else{ localStorage.removeItem(STAFF_NAME_KEY); localStorage.removeItem(STAFF_ID_KEY); }
+        }catch(e2){}
+        if(staffMatch) tryLogAttendance(staffMatch.id, staffMatch.name, 0);
+        if(err){ err.textContent = '✅ تطابق! جاري الفتح...'; err.style.color = '#3C8F4A'; }
+        unlockNow();
+      } else {
+        if(err) err.textContent = 'رمز غير صحيح — كتبت ' + entered.length + ' رقم (المطلوب ' + STAFF_PIN.length + '). القيمة المستلمة: ' + (entered || '(فاضية)');
+        if(input){ input.value = ''; input.focus(); }
+        var dbg = document.getElementById('pinDebug');
+        if(dbg) dbg.textContent = 'عدد الأرقام المكتوبة: 0';
+      }
+    }catch(fatalErr){
+      var err2 = document.getElementById('pinError');
+      if(err2){ err2.style.display = 'block'; err2.style.color = '#C0392B'; err2.textContent = 'خطأ برمجي: ' + fatalErr.message; }
+    }
+  }
+
+  function wireUp(){
+    var input = document.getElementById('pinTextInput');
+    var btn = document.getElementById('pinSubmit');
+    var dbg = document.getElementById('pinDebug');
+    var bioBtn = document.getElementById('biometricBtn');
+    if(btn){
+      btn.addEventListener('click', tryUnlock);
+      btn.addEventListener('touchend', function(e){ e.preventDefault(); tryUnlock(); });
+    }
+    if(bioBtn){
+      bioBtn.addEventListener('click', tryBiometricUnlock);
+    }
+    updateBiometricVisibility();
+    if(input){
+      input.addEventListener('keydown', function(e){ if(e.key==='Enter') tryUnlock(); });
+      input.addEventListener('input', function(){
+        var err = document.getElementById('pinError');
+        if(err) err.style.display = 'none';
+        if(dbg) dbg.textContent = 'عدد الأرقام المكتوبة: ' + input.value.replace(/[^0-9]/g,'').length;
+      });
+      setTimeout(function(){ input.focus(); }, 100);
+    }
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', wireUp);
+  } else {
+    wireUp();
+  }
+})();
+</script>
+
+<script>
+window.diwaniyaOrdersSync = window.diwaniyaOrdersSync || {
+  _subscribers: [],
+  onUpdate: null,
+  save: function(){ return Promise.resolve(false); },
+  subscribe: function(cb){ this._subscribers.push(cb); },
+};
+window.diwaniyaAuth = window.diwaniyaAuth || {
+  onReady: null,
+  signUp: function(){ return Promise.reject(new Error('auth not ready yet')); },
+  signIn: function(){ return Promise.reject(new Error('auth not ready yet')); },
+  signOutUser: function(){ return Promise.resolve(); },
+};
+if(window.diwaniyaStaffList === undefined){
+  window.diwaniyaStaffList = [];
+  try{
+    var cached = localStorage.getItem('diwaniya-staff-list-cache');
+    if(cached) window.diwaniyaStaffList = JSON.parse(cached);
+  }catch(e){}
+}
+if(window.diwaniyaBranchesList === undefined){
+  window.diwaniyaBranchesList = [];
+  try{
+    var cachedBr = localStorage.getItem('diwaniya-branches-cache');
+    if(cachedBr) window.diwaniyaBranchesList = JSON.parse(cachedBr);
+  }catch(e){}
+}
+if(window.diwaniyaDiscountCodes === undefined){
+  window.diwaniyaDiscountCodes = [];
+  try{
+    var cachedDc = localStorage.getItem('diwaniya-discounts-cache');
+    if(cachedDc) window.diwaniyaDiscountCodes = JSON.parse(cachedDc);
+  }catch(e){}
+}
+if(window.diwaniyaStaffNotices === undefined){
+  window.diwaniyaStaffNotices = [];
+}
+</script>
+
+<div class="topbar">
+  <div class="brand">
+    <div>
+      <h1>🍽️ نظام مطبخ ديفان الخليج</h1>
+      <div class="sub">لوحة الطلبات الحية للشيف والموظفين</div>
+      <div class="staff-name-badge" id="staffNameBadge"></div>
+    </div>
+  </div>
+  <div class="clock" id="clockText">--:--:--</div>
+  <div class="conn-status" id="connStatus" title="حالة الاتصال">🟢</div>
+  <button class="help-btn" id="helpCallBtn">🆘 نداء مساعدة</button>
+  <div class="role-toggle" id="roleToggle">
+    <button class="role-btn active" data-role="kitchen">👨‍🍳 المطبخ</button>
+    <button class="role-btn" data-role="floor">🧑‍💼 الكاشير/النادل</button>
+  </div>
+  <button class="new-order-btn" id="newOrderBtn">+ طلب جديد</button>
+</div>
+
+<div class="order-search-row">
+  <input type="text" id="orderSearchInput" inputmode="numeric" placeholder="🔍 دوّر برقم الطلب">
+</div>
+
+<div class="staff-notice-banner" id="staffNoticeBanner" style="display:none;">
+  <span id="staffNoticeText"></span>
+  <button id="staffNoticeDismiss" aria-label="إخفاء">✕</button>
+</div>
+
+<div class="stats-bar" id="statsBar"></div>
+
+<div class="filter-bar" id="stationFilterBar"></div>
+<div class="filter-bar" id="typeFilterBar"></div>
+
+<div class="alert-banner" id="alertBanner">🔔 طلب جديد وصل!</div>
+
+<div class="board" id="board"></div>
+
+<button class="completed-toggle" id="completedToggleBtn">📦 عرض الطلبات المكتملة اليوم (<span id="completedCount">0</span>)</button>
+<div class="completed-drawer" id="completedDrawer">
+  <div class="completed-list" id="completedList"></div>
+  <button class="clear-completed-btn" id="clearCompletedBtn">🗑️ مسح الطلبات المكتملة</button>
+</div>
+
+<!-- new order sheet -->
+<div class="sheet-overlay" id="newOrderOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">
+      <h3>طلب جديد</h3>
+      <button class="close-x" id="newOrderCloseX">✕</button>
+    </div>
+
+    <label class="field-label">نوع الطلب</label>
+    <div class="pill-row" id="typePillRow"></div>
+
+    <div id="tableFieldWrap">
+      <label class="field-label">رقم الطاولة</label>
+      <input class="text-input num-input" id="tableInput" type="number" min="1" placeholder="مثال: 7">
+    </div>
+
+    <label class="field-label">إضافة أصناف</label>
+    <div class="item-picker-row">
+      <select id="itemSelect"></select>
+      <input id="itemQty" type="number" min="1" value="1">
+      <button id="addItemBtn">إضافة</button>
+    </div>
+    <div class="draft-items" id="draftItems"></div>
+
+    <label class="field-label">ملاحظات عامة على الطلب (حساسية، طلبات خاصة...)</label>
+    <textarea class="text-input" id="orderNoteInput" placeholder="مثال: حساسية من المكسرات"></textarea>
+
+    <label class="field-label">أولوية</label>
+    <div class="pill-row">
+      <button class="pill-opt" id="rushToggleBtn">⚡ طلب مستعجل</button>
+    </div>
+
+    <button class="submit-order-btn" id="submitOrderBtn" disabled>إرسال الطلب للمطبخ</button>
+  </div>
+</div>
+
+<div id="printArea"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyASZzpHN3naZ3UxlRGS-VaDiNZV4-upmzA",
+    authDomain: "professional-restaurant-system.firebaseapp.com",
+    projectId: "professional-restaurant-system",
+    storageBucket: "professional-restaurant-system.firebasestorage.app",
+    messagingSenderId: "809714960687",
+    appId: "1:809714960687:web:649fc13dd48972052139da",
+    measurementId: "G-397FXE7298"
+  };
+
+  const fbApp = initializeApp(firebaseConfig);
+  const db = getFirestore(fbApp);
+  const auth = getAuth(fbApp);
+  const ordersDocRef = doc(db, 'diwaniya', 'liveOrders');
+
+  window.diwaniyaOrdersSync.save = function(orders){
+    return setDoc(ordersDocRef, { orders, updatedAt: Date.now() })
+      .then(() => true)
+      .catch((e) => { console.warn('Firestore save failed:', e); return false; });
+  };
+
+  window.diwaniyaConnStatus = window.diwaniyaConnStatus || { ok: true };
+
+  onSnapshot(ordersDocRef, (snap) => {
+    window.diwaniyaConnStatus.ok = true;
+    if(!snap.exists()) return;
+    const orders = snap.data().orders || [];
+    if(window.diwaniyaOrdersSync.onUpdate) window.diwaniyaOrdersSync.onUpdate(orders);
+    (window.diwaniyaOrdersSync._subscribers || []).forEach((cb) => { try{ cb(orders); }catch(e){} });
+  }, (err) => { window.diwaniyaConnStatus.ok = false; console.warn('Firestore live sync error:', err); });
+
+  // ---------- menu overrides (live prices + sold-out status from the dashboard) ----------
+  const overridesRef = doc(db, 'diwaniya', 'menuOverrides');
+  onSnapshot(overridesRef, (snap) => {
+    const items = (snap.exists() && snap.data().items) ? snap.data().items : {};
+    window.diwaniyaMenuOverrides = items;
+    if(window.onMenuOverridesUpdate) window.onMenuOverridesUpdate(items);
+  }, (err) => console.warn('menu overrides sync error:', err));
+
+  // ---------- staff accounts (per-employee PIN login) ----------
+  const staffAccountsRef = doc(db, 'diwaniya', 'staffAccounts');
+  onSnapshot(staffAccountsRef, (snap) => {
+    const list = (snap.exists() && snap.data().list) ? snap.data().list : [];
+    window.diwaniyaStaffList = list;
+    try{ localStorage.setItem('diwaniya-staff-list-cache', JSON.stringify(list)); }catch(e){}
+    if(window.onStaffListUpdate) window.onStaffListUpdate(list);
+  }, (err) => console.warn('Staff accounts sync error:', err));
+
+  window.registerBiometricCredential = function(staffId, credId){
+    return getDoc(staffAccountsRef).then((snap) => {
+      const list = (snap.exists() && snap.data().list) ? snap.data().list : [];
+      const idx = list.findIndex(s => s.id === staffId);
+      if(idx === -1) return {ok:false, msg:'الموظف مو موجود'};
+      list[idx].biometricCredId = credId;
+      return setDoc(staffAccountsRef, { list, updatedAt: Date.now() })
+        .then(() => ({ok:true}))
+        .catch(() => ({ok:false, msg:'تعذّر الحفظ'}));
+    });
+  };
+
+  // ---------- kitchen inventory (ingredients & stock) ----------
+  const inventoryRef = doc(db, 'diwaniya', 'inventory');
+  onSnapshot(inventoryRef, (snap) => {
+    const items = (snap.exists() && snap.data().items) ? snap.data().items : [];
+    window.diwaniyaInventory = items;
+    if(window.onInventoryUpdate) window.onInventoryUpdate(items);
+  }, (err) => console.warn('inventory sync error:', err));
+
+  window.addInventoryItem = function(name, unit, stock, threshold){
+    return getDoc(inventoryRef).then((snap) => {
+      const items = (snap.exists() && snap.data().items) ? snap.data().items : [];
+      items.push({
+        id: 'ing-' + Date.now().toString(36),
+        name, unit, stock, threshold,
+        updatedAt: Date.now(),
+      });
+      return setDoc(inventoryRef, { items, updatedAt: Date.now() });
+    }).then(() => true).catch(() => false);
+  };
+
+  window.updateInventoryStock = function(itemId, newStock){
+    return getDoc(inventoryRef).then((snap) => {
+      const items = (snap.exists() && snap.data().items) ? snap.data().items : [];
+      const idx = items.findIndex(i => i.id === itemId);
+      if(idx === -1) return false;
+      items[idx].stock = newStock;
+      items[idx].updatedAt = Date.now();
+      return setDoc(inventoryRef, { items, updatedAt: Date.now() }).then(() => true);
+    }).catch(() => false);
+  };
+
+  window.editInventoryItem = function(itemId, name, unit, threshold){
+    return getDoc(inventoryRef).then((snap) => {
+      const items = (snap.exists() && snap.data().items) ? snap.data().items : [];
+      const idx = items.findIndex(i => i.id === itemId);
+      if(idx === -1) return false;
+      items[idx].name = name;
+      items[idx].unit = unit;
+      items[idx].threshold = threshold;
+      items[idx].updatedAt = Date.now();
+      return setDoc(inventoryRef, { items, updatedAt: Date.now() }).then(() => true);
+    }).catch(() => false);
+  };
+
+  window.deleteInventoryItem = function(itemId){
+    return getDoc(inventoryRef).then((snap) => {
+      const items = (snap.exists() && snap.data().items) ? snap.data().items : [];
+      const filtered = items.filter(i => i.id !== itemId);
+      return setDoc(inventoryRef, { items: filtered, updatedAt: Date.now() }).then(() => true);
+    }).catch(() => false);
+  };
+
+  // ---------- kitchen manager PIN (owner-changeable, cached locally for instant gate check) ----------
+  const ownerSettingsRefForKM = doc(db, 'diwaniya', 'ownerSettings');
+  onSnapshot(ownerSettingsRefForKM, (snap) => {
+    if(snap.exists() && snap.data().kitchenManagerPin){
+      try{ localStorage.setItem('diwaniya-kitchen-mgr-pin-cache', snap.data().kitchenManagerPin); }catch(e){}
+    }
+  }, (err) => console.warn('kitchen manager PIN sync error:', err));
+  window.changeKitchenManagerPin = function(currentPin, newPin){
+    return getDoc(ownerSettingsRefForKM).then((snap) => {
+      const actualPin = (snap.exists() && snap.data().kitchenManagerPin) ? snap.data().kitchenManagerPin : '773311';
+      if(currentPin !== actualPin){
+        return {ok:false, msg:'⚠️ الرمز الحالي غلط'};
+      }
+      return setDoc(ownerSettingsRefForKM, { kitchenManagerPin: newPin, updatedAt: Date.now() }, { merge: true })
+        .then(() => {
+          try{ localStorage.setItem('diwaniya-kitchen-mgr-pin-cache', newPin); }catch(e){}
+          return {ok:true};
+        })
+        .catch(() => ({ok:false, msg:'⚠️ تعذّر الحفظ — تأكد من الإنترنت'}));
+    });
+  };
+
+  // ---------- branches (owner-editable) ----------
+  const branchesListRef = doc(db, 'diwaniya', 'branchesList');
+  onSnapshot(branchesListRef, (snap) => {
+    const list = (snap.exists() && snap.data().list) ? snap.data().list : [];
+    window.diwaniyaBranchesList = list;
+    try{ localStorage.setItem('diwaniya-branches-cache', JSON.stringify(list)); }catch(e){}
+    if(window.onBranchesListUpdate) window.onBranchesListUpdate(list);
+  }, (err) => console.warn('Branches sync error:', err));
+
+  // ---------- discount codes (owner-editable) ----------
+  const discountCodesRef = doc(db, 'diwaniya', 'discountCodes');
+  onSnapshot(discountCodesRef, (snap) => {
+    const list = (snap.exists() && snap.data().list) ? snap.data().list : [];
+    window.diwaniyaDiscountCodes = list;
+    try{ localStorage.setItem('diwaniya-discounts-cache', JSON.stringify(list)); }catch(e){}
+    if(window.onDiscountCodesUpdate) window.onDiscountCodesUpdate(list);
+  }, (err) => console.warn('Discount codes sync error:', err));
+
+  // ---------- menu usability feedback (stars + note) ----------
+  const usabilityFeedbackRef = doc(db, 'diwaniya', 'usabilityFeedback');
+  window.saveUsabilityFeedback = function(stars, note){
+    return getDoc(usabilityFeedbackRef).then((snap) => {
+      const entries = (snap.exists() && snap.data().entries) ? snap.data().entries : [];
+      entries.push({ stars, note: note || '', at: Date.now() });
+      return setDoc(usabilityFeedbackRef, { entries, updatedAt: Date.now() });
+    })
+      .then(() => true)
+      .catch((e) => { console.warn('usability feedback save failed:', e); return false; });
+  };
+  onSnapshot(usabilityFeedbackRef, (snap) => {
+    const entries = (snap.exists() && snap.data().entries) ? snap.data().entries : [];
+    window.diwaniyaUsabilityFeedback = entries;
+    if(window.onUsabilityFeedbackUpdate) window.onUsabilityFeedbackUpdate(entries);
+  }, (err) => console.warn('usability feedback sync error:', err));
+
+  // ---------- staff attendance (clock-in log) ----------
+  const attendanceRef = doc(db, 'diwaniya', 'attendance');
+  window.logAttendance = function(staffId, staffName){
+    return getDoc(attendanceRef).then((snap) => {
+      const records = (snap.exists() && snap.data().records) ? snap.data().records : [];
+      records.push({ staffId, staffName, at: Date.now() });
+      return setDoc(attendanceRef, { records, updatedAt: Date.now() });
+    })
+      .then(() => { checkLateAndDeduct(staffId, staffName); return true; })
+      .catch((e) => { console.warn('attendance log failed:', e); return false; });
+  };
+
+  const ownerSettingsRefForLate = doc(db, 'diwaniya', 'ownerSettings');
+  const staffAccountsRefForLate = doc(db, 'diwaniya', 'staffAccounts');
+  function checkLateAndDeduct(staffId, staffName){
+    const staff = (window.diwaniyaStaffList || []).find(s => s.id === staffId);
+    if(!staff || !staff.shifts) return;
+    const dayKeys = ['sun','mon','tue','wed','thu','fri','sat'];
+    const now = new Date();
+    const todayKey = dayKeys[now.getDay()];
+    const shift = staff.shifts[todayKey];
+    if(!shift || !shift.start) return;
+    const parts = shift.start.split(':');
+    const scheduledStart = new Date(now);
+    scheduledStart.setHours(parseInt(parts[0],10) || 0, parseInt(parts[1],10) || 0, 0, 0);
+    const lateMinutes = Math.round((now - scheduledStart) / 60000);
+
+    getDoc(ownerSettingsRefForLate).then((ownerSnap) => {
+      const ownerData = ownerSnap.exists() ? ownerSnap.data() : {};
+      const graceMinutes = (ownerData.lateGraceMinutes !== undefined) ? ownerData.lateGraceMinutes : 15;
+      if(lateMinutes <= graceMinutes) return;
+      const penalty = (ownerData.latePenaltyAmount !== undefined) ? ownerData.latePenaltyAmount : 25;
+      const todayDateStr = now.toISOString().slice(0,10);
+      const marker = 'تأخير-' + todayDateStr;
+      return getDoc(staffAccountsRefForLate).then((staffSnap) => {
+        const list = (staffSnap.exists() && staffSnap.data().list) ? staffSnap.data().list : [];
+        const idx = list.findIndex(s => s.id === staffId);
+        if(idx === -1) return;
+        const already = (list[idx].deductions || []).some(d => d.reason && d.reason.indexOf(marker) !== -1);
+        if(already) return;
+        list[idx].deductions = list[idx].deductions || [];
+        list[idx].deductions.push({
+          amount: penalty,
+          reason: marker + ' — تأخر ' + lateMinutes + ' دقيقة عن موعد دوامه',
+          at: Date.now(),
+        });
+        return setDoc(staffAccountsRefForLate, { list, updatedAt: Date.now() });
+      });
+    }).catch((e) => console.warn('late deduction check failed:', e));
+  }
+
+  // ---------- staff notices (internal messages to the team) ----------
+  const staffNoticesRef = doc(db, 'diwaniya', 'staffNotices');
+  window.addStaffNotice = function(text){
+    return getDoc(staffNoticesRef).then((snap) => {
+      const notices = (snap.exists() && snap.data().notices) ? snap.data().notices : [];
+      notices.push({ text, at: Date.now() });
+      return setDoc(staffNoticesRef, { notices, updatedAt: Date.now() });
+    })
+      .then(() => true)
+      .catch((e) => { console.warn('staff notice save failed:', e); return false; });
+  };
+  window.deleteStaffNotice = function(index){
+    return getDoc(staffNoticesRef).then((snap) => {
+      const notices = (snap.exists() && snap.data().notices) ? snap.data().notices : [];
+      notices.splice(index, 1);
+      return setDoc(staffNoticesRef, { notices, updatedAt: Date.now() });
+    })
+      .then(() => true)
+      .catch((e) => { console.warn('staff notice delete failed:', e); return false; });
+  };
+  onSnapshot(staffNoticesRef, (snap) => {
+    const notices = (snap.exists() && snap.data().notices) ? snap.data().notices : [];
+    window.diwaniyaStaffNotices = notices;
+    if(window.onStaffNoticesUpdate) window.onStaffNoticesUpdate(notices);
+  }, (err) => console.warn('staff notices sync error:', err));
+
+  // ---------- prep checklist tasks (owner/chef-editable per station) ----------
+  const prepTasksRef = doc(db, 'diwaniya', 'prepTasks');
+  onSnapshot(prepTasksRef, (snap) => {
+    const tasks = (snap.exists() && snap.data().tasks) ? snap.data().tasks : null;
+    window.diwaniyaPrepTasks = tasks;
+    if(window.onPrepTasksUpdate) window.onPrepTasksUpdate(tasks);
+  }, (err) => console.warn('prep tasks sync error:', err));
+
+  window.addPrepTask = function(station, defaultTasks, taskText){
+    return getDoc(prepTasksRef).then((snap) => {
+      const tasks = (snap.exists() && snap.data().tasks) ? snap.data().tasks : { ...defaultTasks };
+      tasks[station] = tasks[station] || [...(defaultTasks[station] || [])];
+      tasks[station].push(taskText);
+      return setDoc(prepTasksRef, { tasks, updatedAt: Date.now() });
+    }).then(() => true).catch(() => false);
+  };
+
+  window.removePrepTask = function(station, defaultTasks, index){
+    return getDoc(prepTasksRef).then((snap) => {
+      const tasks = (snap.exists() && snap.data().tasks) ? snap.data().tasks : { ...defaultTasks };
+      tasks[station] = tasks[station] || [...(defaultTasks[station] || [])];
+      tasks[station].splice(index, 1);
+      return setDoc(prepTasksRef, { tasks, updatedAt: Date.now() });
+    }).then(() => true).catch(() => false);
+  };
+
+  // ---------- loyalty points (read-only for customers; owner manages bonuses from the dashboard) ----------
+  const loyaltyBonusesRef = doc(db, 'diwaniya', 'loyaltyBonuses');
+  onSnapshot(loyaltyBonusesRef, (snap) => {
+    const bonuses = (snap.exists() && snap.data().bonuses) ? snap.data().bonuses : {};
+    window.diwaniyaLoyaltyBonuses = bonuses;
+    if(window.onLoyaltyBonusesUpdate) window.onLoyaltyBonusesUpdate(bonuses);
+  }, (err) => console.warn('loyalty bonuses sync error:', err));
+
+  // ---------- loyalty points redemption (customer spends points at checkout) ----------
+  const loyaltyRedemptionsRef = doc(db, 'diwaniya', 'loyaltyRedemptions');
+  window.redeemLoyaltyPoints = function(phone, points){
+    return getDoc(loyaltyRedemptionsRef).then((snap) => {
+      const redeemed = (snap.exists() && snap.data().redeemed) ? snap.data().redeemed : {};
+      redeemed[phone] = (redeemed[phone] || 0) + points;
+      return setDoc(loyaltyRedemptionsRef, { redeemed, updatedAt: Date.now() });
+    }).then(() => true).catch((e) => { console.warn('points redemption save failed:', e); return false; });
+  };
+  onSnapshot(loyaltyRedemptionsRef, (snap) => {
+    const redeemed = (snap.exists() && snap.data().redeemed) ? snap.data().redeemed : {};
+    window.diwaniyaLoyaltyRedemptions = redeemed;
+    if(window.onLoyaltyRedemptionsUpdate) window.onLoyaltyRedemptionsUpdate(redeemed);
+  }, (err) => console.warn('loyalty redemptions sync error:', err));
+
+  // ---------- real customer authentication ----------
+  // Phone + password is what the customer sees; under the hood we map the phone
+  // number to a synthetic email address, since Firebase's simplest, free sign-in
+  // method (Email/Password) is email-based. This gives real, verifiable accounts
+  // that work the same on any device — not just the one that created them.
+  // Phone + password is what the customer sees. Under the hood, Firebase's
+  // Email/Password sign-in needs a real email address to work with — so if the
+  // customer gave us one at signup, we use THAT as their real account email
+  // (which also makes "forgot password" work, since Firebase can only email a
+  // reset link to an account's real registered email). If they skipped the
+  // optional email field, we fall back to a synthetic address built from their
+  // phone number — login still works fine, password reset just can't, since
+  // there's no real inbox behind it.
+  function syntheticEmail(phone){
+    const digits = String(phone).replace(/[^0-9]/g, '');
+    return digits + '@diwaniya-customer.app';
+  }
+  function normalizePhone(phone){
+    return String(phone).replace(/[^0-9]/g, '');
+  }
+  function phoneIndexRef(phone){
+    return doc(db, 'phoneIndex', normalizePhone(phone));
+  }
+
+  window.diwaniyaAuth.signUp = async function(phone, password, name, email){
+    const authEmail = (email && email.trim()) ? email.trim() : syntheticEmail(phone);
+    const cred = await createUserWithEmailAndPassword(auth, authEmail, password);
+    await updateProfile(cred.user, { displayName: name });
+    await setDoc(doc(db, 'users', cred.user.uid), { name, phone, email: email || null, authEmail, createdAt: Date.now() });
+    await setDoc(phoneIndexRef(phone), { authEmail, uid: cred.user.uid });
+    try{
+      const dirRef = doc(db, 'diwaniya', 'customerDirectory');
+      const dirSnap = await getDoc(dirRef);
+      const customers = (dirSnap.exists() && dirSnap.data().customers) ? dirSnap.data().customers : [];
+      if(!customers.some(c => c.phone === phone)){
+        customers.push({ phone, name, signedUpAt: Date.now() });
+        await setDoc(dirRef, { customers, updatedAt: Date.now() });
+      }
+    }catch(e){ console.warn('customer directory update failed:', e); }
+    return { uid: cred.user.uid, name, phone, email: email || null };
+  };
+  window.diwaniyaAuth.signIn = async function(phone, password){
+    let authEmail = syntheticEmail(phone);
+    try{
+      const idxSnap = await getDoc(phoneIndexRef(phone));
+      if(idxSnap.exists()) authEmail = idxSnap.data().authEmail;
+    }catch(e){}
+    const cred = await signInWithEmailAndPassword(auth, authEmail, password);
+    const snap = await getDoc(doc(db, 'users', cred.user.uid));
+    const data = snap.exists() ? snap.data() : { name: cred.user.displayName || 'زبون', phone };
+    return { uid: cred.user.uid, name: data.name, phone: data.phone || phone, email: data.email || null };
+  };
+  window.diwaniyaAuth.signOutUser = async function(){
+    await signOut(auth);
+  };
+  window.diwaniyaAuth.resetPassword = async function(phone){
+    const idxSnap = await getDoc(phoneIndexRef(phone));
+    if(!idxSnap.exists()){
+      const err = new Error('no account found for this phone'); err.code = 'diwaniya/no-account'; throw err;
+    }
+    const { authEmail } = idxSnap.data();
+    if(!authEmail || authEmail.endsWith('@diwaniya-customer.app')){
+      const err = new Error('no real email on file'); err.code = 'diwaniya/no-email'; throw err;
+    }
+    await sendPasswordResetEmail(auth, authEmail);
+    return true;
+  };
+
+  onAuthStateChanged(auth, async (user) => {
+    if(!window.diwaniyaAuth.onReady) return;
+    if(!user){ window.diwaniyaAuth.onReady(null); return; }
+    try{
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      const data = snap.exists() ? snap.data() : { name: user.displayName || 'زبون', phone: '' };
+      window.diwaniyaAuth.onReady({ uid: user.uid, name: data.name, phone: data.phone, email: data.email || null });
+    }catch(e){
+      window.diwaniyaAuth.onReady(null);
+    }
+  });
+</script>
+
+<script>
+(function(){
+  function escapeHtml(str){
+    if(str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function renderStaffNotice(notices){
+    const banner = document.getElementById('staffNoticeBanner');
+    const textEl = document.getElementById('staffNoticeText');
+    if(!notices || !notices.length){ banner.style.display = 'none'; return; }
+    const latest = notices[notices.length - 1];
+    let dismissedAt = null;
+    try{ dismissedAt = localStorage.getItem('diwaniya-notice-dismissed'); }catch(e){}
+    if(dismissedAt && parseInt(dismissedAt,10) === latest.at){ banner.style.display = 'none'; return; }
+    textEl.textContent = '📢 ' + latest.text;
+    banner.style.display = 'flex';
+  }
+  window.onStaffNoticesUpdate = function(notices){ renderStaffNotice(notices); };
+  document.getElementById('staffNoticeDismiss').addEventListener('click', () => {
+    const notices = window.diwaniyaStaffNotices || [];
+    if(notices.length){
+      try{ localStorage.setItem('diwaniya-notice-dismissed', String(notices[notices.length-1].at)); }catch(e){}
+    }
+    document.getElementById('staffNoticeBanner').style.display = 'none';
+  });
+  renderStaffNotice(window.diwaniyaStaffNotices || []);
+  // ===================================================================
+  // STATIONS: كل صنف بالمنيو يتبع محطة تحضير معينة
+  // ===================================================================
+  const STATIONS = [
+    {key:'grill',   label:'المشاوي والمندي',        icon:'🔥'},
+    {key:'hotApp',  label:'مقبلات ساخنة',           icon:'🥟'},
+    {key:'coldApp', label:'مقبلات باردة وسلطات',    icon:'🥗'},
+    {key:'drinks',  label:'مشروبات',                 icon:'🥤'},
+    {key:'dessert', label:'حلى',                      icon:'🍯'},
+  ];
+  const STATION_MAP = {};
+  STATIONS.forEach(s => STATION_MAP[s.key] = s);
+
+  const ORDER_TYPES = [
+    {key:'dine-in',  label:'صالة',      icon:'🍽️'},
+    {key:'takeaway', label:'تيك اواي',  icon:'🥡'},
+    {key:'delivery', label:'توصيل',     icon:'🛵'},
+  ];
+  const TYPE_MAP = {}; ORDER_TYPES.forEach(t => TYPE_MAP[t.key] = t);
+
+  const STATUS_COLUMNS = [
+    {key:'new',       label:'طلبات جديدة',    icon:'🆕'},
+    {key:'preparing', label:'قيد التحضير',    icon:'👨\u200d🍳'},
+    {key:'ready',     label:'جاهز للتسليم',   icon:'✅'},
+  ];
+
+  // Menu catalog used to build new orders (mirrors the customer menu, station-tagged)
+  const MENU_ITEMS = [
+    {name:'صحن مشكل مشاوي (وسط)', station:'grill'},
+    {name:'كبسة دجاج', station:'grill'},
+    {name:'كبسة لحم', station:'grill'},
+    {name:'مندي لحم', station:'grill'},
+    {name:'مندي دجاج', station:'grill'},
+    {name:'زبيدي مشوي', station:'grill'},
+    {name:'روبيان مشوي بالثومية', station:'grill'},
+    {name:'برياني لحم خليجي', station:'grill'},
+    {name:'قوزي لحم', station:'grill'},
+    {name:'هريس دجاج', station:'grill'},
+    {name:'سمبوسة لحم', station:'hotApp'},
+    {name:'سمبوسة جبن', station:'hotApp'},
+    {name:'سمبوسة دجاج', station:'hotApp'},
+    {name:'مطبق لحم', station:'hotApp'},
+    {name:'مطبق جبن', station:'hotApp'},
+    {name:'روبيان مقرمش بصوص الليمون', station:'hotApp'},
+    {name:'زبادي بالخيار', station:'coldApp'},
+    {name:'سلطة خليجية بالطحينة', station:'coldApp'},
+    {name:'سلطة دقوس', station:'coldApp'},
+    {name:'سلطة جرجير بالرمان', station:'coldApp'},
+    {name:'لبنة بزيت الزيتون', station:'coldApp'},
+    {name:'حمص بزيت الزيتون والصنوبر', station:'coldApp'},
+    {name:'عصير برتقال طازج', station:'drinks'},
+    {name:'ليموناضة بالنعناع', station:'drinks'},
+    {name:'لبن بارد', station:'drinks'},
+    {name:'مشروب غازي (كولا)', station:'drinks'},
+    {name:'شاي مثلج', station:'drinks'},
+    {name:'قهوة عربية', station:'drinks'},
+    {name:'شاي كرك', station:'drinks'},
+    {name:'لقيمات', station:'dessert'},
+    {name:'خبيصة', station:'dessert'},
+    {name:'كليجا', station:'dessert'},
+    {name:'مهلبية بالزعفران', station:'dessert'},
+  ];
+
+  // Urgency thresholds (minutes)
+  const PREP_THRESHOLDS = {fresh:8, warn:15};   // while new / preparing
+  const READY_THRESHOLDS = {fresh:3, warn:6};   // while waiting to be served
+
+  const STORE_KEY = 'diwaniya-kitchen-orders-v1';
+  const NUM_KEY = 'diwaniya-kitchen-ordernum-v1';
+
+  function loadOrders(){
+    try{ const raw = localStorage.getItem(STORE_KEY); if(raw) return JSON.parse(raw); }catch(e){}
+    return null;
+  }
+  let hasUnsavedChanges = false;
+  function saveOrders(){
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(orders)); }catch(e){}
+    if(window.diwaniyaOrdersSync){
+      window.diwaniyaOrdersSync.save(orders).then((ok) => { hasUnsavedChanges = !ok; });
+    }
+  }
+  let wasConnectedForRetry = true;
+  setInterval(() => {
+    const nowConnected = !!(window.diwaniyaConnStatus && window.diwaniyaConnStatus.ok);
+    if(nowConnected && !wasConnectedForRetry && hasUnsavedChanges && window.diwaniyaOrdersSync){
+      window.diwaniyaOrdersSync.save(orders).then((ok) => { hasUnsavedChanges = !ok; });
+    }
+    wasConnectedForRetry = nowConnected;
+  }, 3000);
+  function nextOrderNumber(){
+    let n = 101;
+    try{ n = parseInt(localStorage.getItem(NUM_KEY) || '101', 10); }catch(e){}
+    try{ localStorage.setItem(NUM_KEY, String(n+1)); }catch(e){}
+    return n;
+  }
+
+  function makeItem(name, qty, note){
+    const catalog = MENU_ITEMS.find(m => m.name === name);
+    return {
+      id: 'it-' + Math.random().toString(36).slice(2,9),
+      name, qty: qty||1, station: catalog ? catalog.station : 'grill',
+      note: note || '', ready:false,
+    };
+  }
+  function readyItem(name, qty, note){ const it = makeItem(name, qty, note); it.ready = true; return it; }
+
+  function seedDemoOrders(){
+    const now = Date.now();
+    return [
+      {
+        id:'ord-1', number:101, type:'dine-in', table:4, status:'preparing',
+        items:[ makeItem('مندي لحم',2), makeItem('سلطة دقوس',2), makeItem('لبن بارد',2) ],
+        note:'', priority:false, createdAt: now - 6*60000, startedAt: now - 5*60000, readyAt:null, completedAt:null,
+      },
+      {
+        id:'ord-2', number:102, type:'takeaway', table:null, status:'new',
+        items:[ makeItem('صحن مشكل مشاوي (وسط)',1), makeItem('حمص بزيت الزيتون والصنوبر',1), makeItem('شاي مثلج',2) ],
+        note:'حساسية من المكسرات', priority:true, createdAt: now - 2*60000, startedAt:null, readyAt:null, completedAt:null,
+      },
+      {
+        id:'ord-3', number:103, type:'delivery', table:null, status:'new',
+        items:[ makeItem('كبسة دجاج',3), makeItem('زبادي بالخيار',3), makeItem('عصير برتقال طازج',3) ],
+        note:'', priority:false, createdAt: now - 1*60000, startedAt:null, readyAt:null, completedAt:null,
+      },
+      {
+        id:'ord-4', number:104, type:'dine-in', table:9, status:'ready',
+        items:[ readyItem('سمبوسة لحم',4), readyItem('قهوة عربية',2), readyItem('لقيمات',2) ],
+        note:'', priority:false, createdAt: now - 17*60000, startedAt: now - 16*60000, readyAt: now - 2*60000, completedAt:null,
+      },
+      {
+        id:'ord-5', number:100, type:'dine-in', table:2, status:'completed',
+        items:[ readyItem('مندي دجاج',2), readyItem('سلطة خليجية بالطحينة',2) ],
+        note:'', priority:false, createdAt: now - 40*60000, startedAt: now - 39*60000, readyAt: now - 30*60000, completedAt: now - 25*60000,
+      },
+    ].map(o => { // clean up any stray artifacts from the quick construction above
+      o.items = o.items.filter(Boolean);
+      o.items.forEach(it => { if(it && it.ready === undefined) it.ready = false; });
+      return o;
+    });
+  }
+
+  let orders = loadOrders();
+  if(!orders || !orders.length){ orders = seedDemoOrders(); saveOrders(); }
+  let currentRole = 'kitchen';
+  let stationFilter = 'all';
+  let typeFilter = 'all';
+  let urgentOnly = false;
+  let orderSearchQuery = '';
+  let draftItems = [];
+  let draftType = 'dine-in';
+  let draftRush = false;
+
+  const boardEl = document.getElementById('board');
+  const statsBar = document.getElementById('statsBar');
+  const stationFilterBar = document.getElementById('stationFilterBar');
+  const typeFilterBar = document.getElementById('typeFilterBar');
+  const alertBanner = document.getElementById('alertBanner');
+
+  // ---------- time helpers ----------
+  function elapsedMinSec(fromTs){
+    const diff = Math.max(0, Date.now() - fromTs);
+    const totalSec = Math.floor(diff/1000);
+    const m = Math.floor(totalSec/60), s = totalSec % 60;
+    return {m, s, totalMin: diff/60000};
+  }
+  function fmtTime(m,s){ return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0'); }
+  function urgencyBucket(totalMin, thresholds){
+    if(totalMin < thresholds.fresh) return 'fresh';
+    if(totalMin < thresholds.warn) return 'warn';
+    return 'urgent';
+  }
+  const BUCKET_COLOR = {fresh:'var(--fresh)', warn:'var(--warn)', urgent:'var(--urgent)'};
+
+  // ---------- clock ----------
+  function tickClock(){
+    document.getElementById('clockText').textContent = new Date().toLocaleTimeString('ar-SA', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  }
+  setInterval(tickClock, 1000); tickClock();
+
+  // ---------- stats ----------
+  function renderStats(){
+    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    const todays = orders.filter(o => o.createdAt >= todayStart.getTime());
+    const active = orders.filter(o => o.status==='new' || o.status==='preparing').length;
+    const readyCount = orders.filter(o => o.status==='ready').length;
+    const completedToday = todays.filter(o => o.status==='completed' && o.startedAt && o.completedAt);
+    let avgPrep = 0;
+    if(completedToday.length){
+      const sum = completedToday.reduce((a,o) => a + (o.completedAt - o.startedAt), 0);
+      avgPrep = Math.round(sum / completedToday.length / 60000);
+    }
+    const stats = [
+      {val: todays.length, lbl:'طلبات اليوم'},
+      {val: active, lbl:'قيد التنفيذ'},
+      {val: readyCount, lbl:'جاهزة للتسليم'},
+      {val: avgPrep + ' د', lbl:'متوسط التحضير'},
+    ];
+    statsBar.innerHTML = stats.map(s => `<div class="stat-chip"><div class="val">${s.val}</div><div class="lbl">${s.lbl}</div></div>`).join('');
+  }
+
+  // ---------- filter bars ----------
+  function renderFilterBars(){
+    stationFilterBar.innerHTML =
+      `<button class="filter-chip ${stationFilter==='all'?'active':''}" data-station="all">🍽️ كل المحطات</button>` +
+      STATIONS.map(s => `<button class="filter-chip ${stationFilter===s.key?'active':''}" data-station="${s.key}">${s.icon} ${s.label}</button>`).join('') +
+      `<span class="filter-sep"></span>` +
+      `<button class="filter-chip ${urgentOnly?'active':''}" id="urgentOnlyChip">🚨 المستعجلة فقط</button>`;
+    stationFilterBar.querySelectorAll('[data-station]').forEach(btn => {
+      btn.addEventListener('click', () => { stationFilter = btn.dataset.station; renderFilterBars(); renderBoard(); });
+    });
+    document.getElementById('urgentOnlyChip').addEventListener('click', () => { urgentOnly = !urgentOnly; renderFilterBars(); renderBoard(); });
+
+    typeFilterBar.innerHTML =
+      `<button class="filter-chip ${typeFilter==='all'?'active':''}" data-type="all">📋 كل الأنواع</button>` +
+      ORDER_TYPES.map(t => `<button class="filter-chip ${typeFilter===t.key?'active':''}" data-type="${t.key}">${t.icon} ${t.label}</button>`).join('');
+    typeFilterBar.querySelectorAll('[data-type]').forEach(btn => {
+      btn.addEventListener('click', () => { typeFilter = btn.dataset.type; renderFilterBars(); renderBoard(); });
+    });
+  }
+
+  // ---------- board ----------
+  function passesFilters(o){
+    if(typeFilter!=='all' && o.type!==typeFilter) return false;
+    if(urgentOnly && !o.priority) return false;
+    if(stationFilter!=='all' && !o.items.some(it => it.station===stationFilter)) return false;
+    if(orderSearchQuery && !String(o.number).includes(orderSearchQuery)) return false;
+    return true;
+  }
+
+  function orderCardHtml(o){
+    const type = TYPE_MAP[o.type];
+    const timerBase = o.status==='ready' ? (o.readyAt||o.createdAt) : (o.status==='preparing' ? (o.startedAt||o.createdAt) : o.createdAt);
+    const thresholds = o.status==='ready' ? READY_THRESHOLDS : PREP_THRESHOLDS;
+    const itemsHtml = o.items.map(it => `
+      <div class="oc-item ${it.ready?'checked':''}" data-item="${it.id}">
+        <input type="checkbox" ${it.ready?'checked':''} ${o.status!=='preparing'?'disabled':''} data-check="${it.id}">
+        <div>
+          <div class="item-name"><span class="item-qty">${it.qty}x</span> ${escapeHtml(it.name)}</div>
+          <div class="item-station">${STATION_MAP[it.station].icon} ${STATION_MAP[it.station].label}</div>
+          ${it.note ? `<div class="item-note">⚠️ ${escapeHtml(it.note)}</div>` : ''}
+        </div>
+      </div>`).join('');
+    const allReady = o.items.every(it => it.ready);
+    let actionHtml = '';
+    if(o.status==='new'){
+      actionHtml = `<button class="oc-btn primary" data-act="start">🔥 بدء التحضير</button>`;
+    } else if(o.status==='preparing'){
+      actionHtml = `<button class="oc-btn primary" data-act="ready" ${allReady?'':'disabled'}>✅ الطلب جاهز</button>`;
+    } else if(o.status==='ready'){
+      actionHtml = `<button class="oc-btn primary" data-act="served">📦 تم التسليم</button>`;
+    }
+    return `
+      <div class="order-card ${o.priority?'priority':''}" data-order="${o.id}">
+        <div class="oc-top">
+          <div>
+            <div class="oc-id">${o.priority?'<span class="rush">⚡</span>':''}#${o.number}</div>
+            <div class="oc-type">${type.icon} ${type.label}${o.table?' · طاولة '+o.table:''}</div>
+          </div>
+          <div class="timer-ring" data-ring="${o.id}" data-base="${timerBase}" data-fresh="${thresholds.fresh}" data-warn="${thresholds.warn}">
+            <div class="inner" data-ring-text="${o.id}">00:00</div>
+          </div>
+        </div>
+        ${o.note ? `<div class="oc-note">⚠️ ${escapeHtml(o.note)}</div>` : ''}
+        <div class="oc-items">${itemsHtml}</div>
+        <div class="oc-meta">أُنشئ الساعة ${new Date(o.createdAt).toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'})}</div>
+        <div class="oc-actions">
+          ${actionHtml}
+          <button class="oc-btn ghost rush-btn ${o.priority?'rush-on':''}" data-act="rush" title="أولوية">⚡</button>
+          <button class="oc-btn ghost" data-act="print" title="طباعة">🖨️</button>
+          <button class="oc-btn ghost cancel-btn" data-act="cancel" title="إلغاء الطلب">✕</button>
+        </div>
+      </div>`;
+  }
+
+  function renderBoard(){
+    boardEl.innerHTML = '';
+    STATUS_COLUMNS.forEach(col => {
+      const colOrders = orders.filter(o => o.status===col.key && passesFilters(o))
+        .sort((a,b) => (b.priority - a.priority) || (a.createdAt - b.createdAt));
+      const colEl = document.createElement('div');
+      colEl.className = 'column';
+      colEl.innerHTML = `
+        <div class="column-head">
+          <h2>${col.icon} ${col.label}</h2>
+          <span class="column-count">${colOrders.length}</span>
+        </div>
+        <div class="column-body">
+          ${colOrders.length ? colOrders.map(orderCardHtml).join('') : '<div class="column-empty">لا توجد طلبات هنا حالياً</div>'}
+        </div>`;
+      boardEl.appendChild(colEl);
+    });
+    wireCardActions();
+    updateAllTimers();
+    renderStats();
+    renderCompletedDrawer();
+  }
+
+  function wireCardActions(){
+    boardEl.querySelectorAll('[data-check]').forEach(chk => {
+      chk.addEventListener('change', () => {
+        const itemId = chk.dataset.check;
+        for(const o of orders){
+          const it = o.items.find(x => x.id===itemId);
+          if(it){ it.ready = chk.checked; saveOrders(); renderBoard(); break; }
+        }
+      });
+    });
+    boardEl.querySelectorAll('.order-card').forEach(card => {
+      const orderId = card.dataset.order;
+      card.querySelectorAll('[data-act]').forEach(btn => {
+        btn.addEventListener('click', () => handleCardAction(orderId, btn.dataset.act));
+      });
+    });
+  }
+
+  function handleCardAction(orderId, act){
+    const o = orders.find(x => x.id===orderId);
+    if(!o) return;
+    let staffName = null;
+    try{ staffName = localStorage.getItem('diwaniya-staff-name') || null; }catch(e){}
+    if(act==='start'){ o.status='preparing'; o.startedAt=Date.now(); o.startedBy = staffName; }
+    else if(act==='ready'){ if(!o.items.every(it=>it.ready)) return; o.status='ready'; o.readyAt=Date.now(); o.readyBy = staffName; }
+    else if(act==='served'){ o.status='completed'; o.completedAt=Date.now(); o.completedBy = staffName; }
+    else if(act==='rush'){ o.priority = !o.priority; }
+    else if(act==='print'){ printTicket(o); return; }
+    else if(act==='cancel'){
+      const reason = prompt('سبب إلغاء الطلب #' + o.number + '؟');
+      if(reason === null) return;
+      o.status = 'cancelled';
+      o.cancelledAt = Date.now();
+      o.cancelReason = reason.trim() || 'غير محدد';
+      o.cancelledBy = staffName;
+    }
+    saveOrders();
+    renderBoard();
+  }
+
+  // ---------- live timers ----------
+  function updateAllTimers(){
+    document.querySelectorAll('[data-ring]').forEach(ring => {
+      const base = parseInt(ring.dataset.base, 10);
+      const fresh = parseFloat(ring.dataset.fresh), warn = parseFloat(ring.dataset.warn);
+      const {m, s, totalMin} = elapsedMinSec(base);
+      const bucket = urgencyBucket(totalMin, {fresh, warn});
+      const pct = Math.min(100, (totalMin / warn) * 100);
+      ring.style.setProperty('--pct', pct.toFixed(0));
+      ring.style.setProperty('--ring-color', BUCKET_COLOR[bucket]);
+      const textEl = ring.querySelector('[data-ring-text]');
+      if(textEl) textEl.textContent = fmtTime(m,s);
+    });
+  }
+  setInterval(updateAllTimers, 1000);
+
+  // ---------- new order alert (simulated) ----------
+  let alertTimer = null;
+  function flashAlert(msg, speakText){
+    alertBanner.textContent = msg;
+    alertBanner.classList.add('show');
+    playBeep();
+    try{ if(navigator.vibrate) navigator.vibrate([120, 60, 120]); }catch(e){}
+    if(speakText) speakAnnouncement(speakText);
+    clearTimeout(alertTimer);
+    alertTimer = setTimeout(() => alertBanner.classList.remove('show'), 3200);
+  }
+  function speakAnnouncement(text){
+    try{
+      if(!window.speechSynthesis) return;
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'ar-SA';
+      utter.rate = 1.0;
+      window.speechSynthesis.speak(utter);
+    }catch(e){}
+  }
+  function playBeep(){
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine'; osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.5);
+    }catch(e){}
+  }
+
+  // ---------- completed drawer ----------
+  function renderCompletedDrawer(){
+    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    const completed = orders.filter(o => o.status==='completed' && o.createdAt >= todayStart.getTime())
+      .sort((a,b) => b.completedAt - a.completedAt);
+    document.getElementById('completedCount').textContent = completed.length;
+    document.getElementById('completedList').innerHTML = completed.length ? completed.map(o => {
+      const type = TYPE_MAP[o.type];
+      const prepMin = o.startedAt && o.completedAt ? Math.round((o.completedAt-o.startedAt)/60000) : '-';
+      return `<div class="completed-row"><span>#${o.number} · ${type.icon} ${type.label}</span><span>تحضير ${prepMin} د</span></div>`;
+    }).join('') : '<div class="column-empty">لا يوجد طلبات مكتملة اليوم</div>';
+  }
+  document.getElementById('completedToggleBtn').addEventListener('click', () => {
+    document.getElementById('completedDrawer').classList.toggle('open');
+  });
+  document.getElementById('clearCompletedBtn').addEventListener('click', () => {
+    orders = orders.filter(o => o.status!=='completed');
+    saveOrders(); renderBoard();
+  });
+
+  // ---------- role toggle ----------
+  document.getElementById('roleToggle').addEventListener('click', (e) => {
+    const btn = e.target.closest('.role-btn');
+    if(!btn) return;
+    currentRole = btn.dataset.role;
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.toggle('active', b===btn));
+    document.body.classList.toggle('floor-view', currentRole==='floor');
+  });
+
+  function registerBiometricForCurrentStaff(staffId, staffName){
+    const challenge = new Uint8Array(32);
+    crypto.getRandomValues(challenge);
+    navigator.credentials.create({
+      publicKey: {
+        challenge,
+        rp: { name: 'ديفان الخليج', id: location.hostname },
+        user: {
+          id: new TextEncoder().encode(staffId),
+          name: staffName || 'موظف',
+          displayName: staffName || 'موظف',
+        },
+        pubKeyCredParams: [{type:'public-key', alg:-7}, {type:'public-key', alg:-257}],
+        authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required' },
+        timeout: 60000,
+      }
+    }).then((cred) => {
+      const bytes = new Uint8Array(cred.rawId);
+      let bin = '';
+      for(let i=0;i<bytes.length;i++) bin += String.fromCharCode(bytes[i]);
+      const credId = btoa(bin);
+      if(window.registerBiometricCredential){
+        window.registerBiometricCredential(staffId, credId).then((result) => {
+          if(result.ok){ alert('✅ تسجّلت بصمتك بنجاح — استخدمها المرة الجاية'); }
+          else{ alert('⚠️ ' + (result.msg || 'تعذّر التسجيل')); }
+        });
+      }
+    }).catch(() => {
+      alert('⚠️ تعذّر تسجيل البصمة — تأكد إن جهازك يدعمها');
+    });
+  }
+
+  document.getElementById('staffNameBadge').addEventListener('click', () => {
+    let staffId = null, staffName = null;
+    try{
+      staffId = localStorage.getItem('diwaniya-staff-id');
+      staffName = localStorage.getItem('diwaniya-staff-name');
+    }catch(e){}
+    if(staffId && window.PublicKeyCredential && navigator.credentials){
+      const staffData = (window.diwaniyaStaffList || []).find(s => s.id === staffId);
+      const alreadyRegistered = staffData && staffData.biometricCredId;
+      if(!alreadyRegistered){
+        if(confirm('تبي تسجّل بصمتك أو Face ID لدخول أسرع المرة الجاية؟\n\n(اضغط "إلغاء" لتسجيل الخروج مباشرة)')){
+          registerBiometricForCurrentStaff(staffId, staffName);
+          return;
+        }
+      }
+    }
+    if(confirm('تسجيل خروج وقفل الشاشة؟')){
+      try{
+        localStorage.removeItem('diwaniya-staff-pin-ok');
+        localStorage.removeItem('diwaniya-staff-name');
+        localStorage.removeItem('diwaniya-staff-id');
+      }catch(e){}
+      location.reload();
+    }
+  });
+
+  // ---------- print ticket ----------
+  function printTicket(o){
+    const type = TYPE_MAP[o.type];
+    const itemsHtml = o.items.map(it => `<div class="p-item">${it.qty}x — ${escapeHtml(it.name)}${it.note ? ' (⚠️ '+escapeHtml(it.note)+')' : ''}</div>`).join('');
+    document.getElementById('printArea').innerHTML = `
+      <h2>ديفان الخليج — تذكرة مطبخ</h2>
+      <div class="p-row"><span>رقم الطلب</span><span>#${o.number}</span></div>
+      <div class="p-row"><span>النوع</span><span>${type.icon} ${type.label}${o.table?' · طاولة '+o.table:''}</span></div>
+      <div class="p-row"><span>الوقت</span><span>${new Date(o.createdAt).toLocaleTimeString('ar-SA')}</span></div>
+      <div class="p-items">${itemsHtml}</div>
+      ${o.note ? `<div class="p-note">⚠️ ${escapeHtml(o.note)}</div>` : ''}
+    `;
+    window.print();
+  }
+
+  // ---------- new order sheet ----------
+  const newOrderOverlay = document.getElementById('newOrderOverlay');
+  const typePillRow = document.getElementById('typePillRow');
+  const tableFieldWrap = document.getElementById('tableFieldWrap');
+  const itemSelect = document.getElementById('itemSelect');
+  const draftItemsEl = document.getElementById('draftItems');
+  const submitBtn = document.getElementById('submitOrderBtn');
+  const rushBtn = document.getElementById('rushToggleBtn');
+
+  itemSelect.innerHTML = MENU_ITEMS.map(m => `<option value="${escapeHtml(m.name)}">${STATION_MAP[m.station].icon} ${escapeHtml(m.name)}</option>`).join('');
+
+  function renderTypePills(){
+    typePillRow.innerHTML = ORDER_TYPES.map(t => `<button class="pill-opt ${draftType===t.key?'active':''}" data-type="${t.key}">${t.icon} ${t.label}</button>`).join('');
+    typePillRow.querySelectorAll('[data-type]').forEach(btn => {
+      btn.addEventListener('click', () => { draftType = btn.dataset.type; renderTypePills(); tableFieldWrap.style.display = draftType==='dine-in' ? 'block' : 'none'; });
+    });
+    tableFieldWrap.style.display = draftType==='dine-in' ? 'block' : 'none';
+  }
+
+  function renderDraftItems(){
+    draftItemsEl.innerHTML = draftItems.map((it, idx) => `
+      <div class="draft-item"><span>${it.qty}x — ${escapeHtml(it.name)}</span><button data-remove="${idx}">حذف</button></div>
+    `).join('');
+    draftItemsEl.querySelectorAll('[data-remove]').forEach(btn => {
+      btn.addEventListener('click', () => { draftItems.splice(parseInt(btn.dataset.remove,10),1); renderDraftItems(); updateSubmitState(); });
+    });
+    updateSubmitState();
+  }
+  function updateSubmitState(){ submitBtn.disabled = draftItems.length===0; }
+
+  document.getElementById('addItemBtn').addEventListener('click', () => {
+    const name = itemSelect.value;
+    const qty = Math.max(1, parseInt(document.getElementById('itemQty').value,10) || 1);
+    draftItems.push({name, qty});
+    renderDraftItems();
+  });
+
+  rushBtn.addEventListener('click', () => { draftRush = !draftRush; rushBtn.classList.toggle('active', draftRush); });
+
+  function openNewOrderSheet(){
+    draftItems = []; draftType = 'dine-in'; draftRush = false;
+    rushBtn.classList.remove('active');
+    document.getElementById('tableInput').value = '';
+    document.getElementById('orderNoteInput').value = '';
+    renderTypePills(); renderDraftItems();
+    newOrderOverlay.classList.add('open');
+  }
+  function closeNewOrderSheet(){ newOrderOverlay.classList.remove('open'); }
+  document.getElementById('newOrderBtn').addEventListener('click', openNewOrderSheet);
+  document.getElementById('newOrderCloseX').addEventListener('click', closeNewOrderSheet);
+  newOrderOverlay.addEventListener('click', (e) => { if(e.target===newOrderOverlay) closeNewOrderSheet(); });
+
+  submitBtn.addEventListener('click', () => {
+    if(!draftItems.length) return;
+    const note = document.getElementById('orderNoteInput').value.trim();
+    const table = draftType==='dine-in' ? (parseInt(document.getElementById('tableInput').value,10) || null) : null;
+    const order = {
+      id: 'ord-' + Date.now() + '-' + Math.random().toString(36).slice(2,6),
+      number: nextOrderNumber(),
+      type: draftType, table, status:'new',
+      items: draftItems.map(d => makeItem(d.name, d.qty, '')),
+      note, priority: draftRush,
+      createdAt: Date.now(), startedAt:null, readyAt:null, completedAt:null,
+    };
+    orders.push(order);
+    saveOrders();
+    closeNewOrderSheet();
+    renderBoard();
+    flashAlert(`🔔 طلب جديد #${order.number} وصل!`, 'طلب جديد رقم ' + order.number);
+  });
+
+  // ---------- order search ----------
+  let searchDebounceTimer = null;
+  document.getElementById('orderSearchInput').addEventListener('input', (e) => {
+    const val = e.target.value.trim();
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+      orderSearchQuery = val;
+      renderBoard();
+    }, 300);
+  });
+
+  // ---------- call for help ----------
+  document.getElementById('helpCallBtn').addEventListener('click', () => {
+    const staffName = (function(){ try{ return localStorage.getItem('diwaniya-staff-name') || 'موظف المطبخ'; }catch(e){ return 'موظف المطبخ'; } })();
+    if(!confirm('ترسل نداء مساعدة عاجل لكل الشاشات؟')) return;
+    if(!window.addStaffNotice){ alert('⏳ جارِ الاتصال بالخادم، حاول بعد ثوانٍ...'); return; }
+    window.addStaffNotice('🆘 ' + staffName + ' يحتاج مساعدة عاجلة بالمطبخ!').then((ok) => {
+      if(!ok) alert('⚠️ تعذّر إرسال النداء — تأكد من الإنترنت');
+    });
+  });
+
+  // ---------- connection status ----------
+  const connStatusEl = document.getElementById('connStatus');
+  window.diwaniyaConnStatus = window.diwaniyaConnStatus || { ok: true };
+  setInterval(() => {
+    connStatusEl.textContent = window.diwaniyaConnStatus.ok ? '🟢' : '🔴';
+    connStatusEl.title = window.diwaniyaConnStatus.ok ? 'متصل' : 'غير متصل — تأكد من الإنترنت';
+  }, 2000);
+
+  // ---------- screen wake lock ----------
+  let wakeLockRef = null;
+  async function requestWakeLock(){
+    try{
+      if('wakeLock' in navigator){
+        wakeLockRef = await navigator.wakeLock.request('screen');
+      }
+    }catch(e){}
+  }
+  requestWakeLock();
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'visible') requestWakeLock();
+  });
+
+  // ---------- init ----------
+  renderFilterBars();
+  renderBoard();
+
+  window.diwaniyaOrdersSync.onUpdate = function(remoteOrders){
+    orders = remoteOrders;
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(orders)); }catch(e){}
+    renderBoard();
+  };
+})();
+</script>
+</body>
+</html>
